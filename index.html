@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轮班状态查询</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .header {
+            color: #1a5276;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .mode-switcher {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            gap: 10px;
+        }
+        
+        .mode-btn {
+            padding: 12px 24px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+        
+        .mode-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .mode-btn.active {
+            background-color: #1a5276;
+            font-weight: bold;
+        }
+        
+        .app-content {
+            transition: opacity 0.3s;
+        }
+        
+        .quick-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .quick-btn {
+            flex: 1;
+            margin: 0 5px;
+            padding: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .quick-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .date-input {
+            width: 100%;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        input[type="date"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .result-container {
+            margin-top: 20px;
+            padding: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .status-title {
+            color: black;
+            font-size: 24px;
+            margin-bottom: 10px;
+            white-space: pre-line;
+        }
+        
+        .query-time {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        
+        .status-main {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        .working {
+            color: red;
+        }
+        
+        .resting {
+            color: green;
+        }
+        
+        .status-time {
+            color: black;
+            font-size: 24px;
+            margin-bottom: 10px;
+            white-space: pre-line;
+        }
+        
+        .status-detail {
+            color: #555;
+            font-size: 18px;
+            margin: 5px 0;
+        }
+
+        .dynamic-info {
+            margin-top: 15px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .real-time-clock {
+            margin-top: 8px;
+            font-style: italic;
+            color: #666;
+        }
+        
+        .shift-time-info {
+            margin-top: 10px;
+            color: #444;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .mode-description {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 20px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">轮班状态查询</div>
+        
+        <div class="mode-switcher">
+            <button class="mode-btn active" id="mode1Btn" onclick="switchMode(1)">轮班查询</button>
+            <button class="mode-btn" id="mode2Btn" onclick="switchMode(2)">上下午查询</button>
+        </div>
+        
+        <div class="mode-description" id="modeDescription">24小时上班，48小时休息</div>
+        
+        <!-- 第一个应用：24/48轮班制 -->
+        <div class="app-content" id="app1">
+            <div class="quick-buttons">
+                <button class="quick-btn" onclick="setQuickDate(0)">今天</button>
+                <button class="quick-btn" onclick="setQuickDate(1)">明天</button>
+                <button class="quick-btn" onclick="setQuickDate(2)">后天</button>
+            </div>
+            
+            <div class="date-input">
+                <input type="date" id="queryDate1">
+            </div>
+            
+            <div class="result-container" id="resultDisplay1">
+                <p>等待查询...</p>
+            </div>
+        </div>
+        
+        <!-- 第二个应用：上下午班制 -->
+        <div class="app-content hidden" id="app2">
+            <div class="quick-buttons">
+                <button class="quick-btn" onclick="setQuickDate2(0)">今天</button>
+                <button class="quick-btn" onclick="setQuickDate2(1)">明天</button>
+                <button class="quick-btn" onclick="setQuickDate2(2)">后天</button>
+            </div>
+            
+            <div class="date-input">
+                <input type="date" id="queryDate2">
+            </div>
+            
+            <div class="result-container" id="resultDisplay2">
+                <p>等待查询...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 模式切换功能 ==========
+        let currentMode = 1;
+        
+        function switchMode(mode) {
+            if (currentMode === mode) return;
+            
+            // 更新按钮状态
+            document.getElementById('mode1Btn').classList.remove('active');
+            document.getElementById('mode2Btn').classList.remove('active');
+            document.getElementById(`mode${mode}Btn`).classList.add('active');
+            
+            // 隐藏当前应用
+            document.getElementById(`app${currentMode}`).classList.add('hidden');
+            // 显示新应用
+            document.getElementById(`app${mode}`).classList.remove('hidden');
+            
+            currentMode = mode;
+            
+            // 更新模式描述
+            updateModeDescription(mode);
+            
+            // 停止当前定时器
+            clearInterval(window.updateInterval);
+            
+            // 初始化对应模式
+            if (mode === 1) {
+                initializeMode1();
+            } else if (mode === 2) {
+                initializeMode2();
+            }
+        }
+        
+        function updateModeDescription(mode) {
+            const descElement = document.getElementById('modeDescription');
+            if (mode === 1) {
+                descElement.textContent = '24小时上班，48小时休息';
+            } else if (mode === 2) {
+                descElement.textContent = '每天上班，分上午班(8:00-13:00)和下午班(13:00-18:00)';
+            }
+        }
+        
+        // ========== 第一个应用：24/48轮班制 ==========
+        // 轮班系统参数
+        const SHIFT_START = new Date(2025, 4, 21, 17, 0, 0); // 从2025/5/21 下午5点开始
+        const SHIFT_DURATION = 24 * 60 * 60 * 1000; // 24小时班次
+        const REST_DURATION = 48 * 60 * 60 * 1000; // 48小时休息
+        const FULL_CYCLE = SHIFT_DURATION + REST_DURATION; // 72小时总周期
+        
+        // 计算指定时间点的轮班状态
+        function getShiftState(dateTime) {
+            const timeDiff = dateTime - SHIFT_START;
+            
+            if (timeDiff < 0) {
+                return { state: 'before_start' };
+            }
+            
+            const cyclesElapsed = Math.floor(timeDiff / FULL_CYCLE);
+            const timeInCurrentCycle = timeDiff % FULL_CYCLE;
+            const isWorking = timeInCurrentCycle < SHIFT_DURATION;
+            
+            const currentCycleStart = new Date(SHIFT_START.getTime() + cyclesElapsed * FULL_CYCLE);
+            
+            let currentPeriodStart;
+            let nextPeriodEnd;
+            
+            if (isWorking) {
+                currentPeriodStart = currentCycleStart;
+                nextPeriodEnd = new Date(currentPeriodStart.getTime() + SHIFT_DURATION);
+            } else {
+                currentPeriodStart = new Date(currentCycleStart.getTime() + SHIFT_DURATION);
+                nextPeriodEnd = new Date(currentPeriodStart.getTime() + REST_DURATION);
+            }
+            
+            return {
+                isWorking,
+                currentPeriodStart,
+                nextPeriodEnd,
+                cyclesElapsed
+            };
+        }
+
+        // 24小时制时间格式化函数
+        function format24HourTime(date) {
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const seconds = date.getSeconds().toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        // 12小时制时间格式化函数（用于上班/下班时间显示）
+        function format12HourTime(date) {
+            const hours = date.getHours();
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const seconds = date.getSeconds().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? '下午' : '上午';
+            const displayHours = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
+            return `${ampm} ${displayHours}:${minutes}:${seconds}`;
+        }
+
+        // 将毫秒转换为"X小时Y分钟"
+        function formatHoursMinutes(ms) {
+            const totalMinutes = Math.floor(ms / (1000 * 60));
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            return `${hours}小时${minutes}分钟`;
+        }
+
+        function queryShiftStatus1() {
+            const queryDateInput = document.getElementById('queryDate1').value;
+            let queryDateObj;
+            
+            // 如果没有选择日期，则默认使用今天
+            if (!queryDateInput) {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const defaultDate = `${year}-${month}-${day}`;
+                document.getElementById('queryDate1').value = defaultDate;
+                queryDateObj = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            } else {
+                const [year, month, day] = queryDateInput.split('-').map(Number);
+                queryDateObj = new Date(year, month - 1, day);
+            }
+            
+            const now = new Date();
+            const isToday = queryDateObj.toDateString() === now.toDateString();
+
+            // 显示用户选择的日期（不带时间）
+            let resultHtml = `<div class="status-title">${queryDateObj.getFullYear()}/${queryDateObj.getMonth() + 1}/${queryDateObj.getDate()}</div>`;
+
+            // 添加查询时间（24小时制，静态显示 - 使用查询时的时间）
+            const currentTime24 = format24HourTime(now);
+            if(isToday) {
+                resultHtml += `<div class="query-time">今天 ${currentTime24} 查询</div>`;
+            } else {
+                resultHtml += `<div class="query-time">${queryDateObj.getFullYear()}/${queryDateObj.getMonth() + 1}/${queryDateObj.getDate()} ${currentTime24} 查询</div>`;
+            }
+
+            // 使用中午12点作为该日代表时间进行状态判断
+            const queryDateTime = new Date(queryDateObj.getFullYear(), queryDateObj.getMonth(), queryDateObj.getDate(), 12, 0, 0);
+            const queryResult = getShiftState(queryDateTime);
+
+            if (queryResult.state === 'before_start') {
+                resultHtml += `
+                    <div class="status-main resting">尚未开始轮班</div>
+                    <div class="status-detail">首个班次开始于\n2025/5/21 下午5点</div>
+                `;
+            } else if (isToday) {
+                // 实时计算当前状态（使用 now）
+                const currentResult = getShiftState(now);
+                
+                if (currentResult.isWorking) {
+                    // 当前正在上班
+                    const shiftEnd = currentResult.nextPeriodEnd;
+                    const shiftEndDate = new Date(shiftEnd);
+                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    const dayAfterTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2);
+                    
+                    if (shiftEndDate.toDateString() === today.toDateString()) {
+                        resultHtml += `<div class="status-main working">正在上班</div><div class="status-time">今天\n下午5点下班</div>`;
+                    } else if (shiftEndDate.toDateString() === tomorrow.toDateString()) {
+                        resultHtml += `<div class="status-main working">正在上班</div><div class="status-time">明天\n下午5点下班</div>`;
+                    } else {
+                        resultHtml += `<div class="status-main working">正在上班</div><div class="status-time">后天\n下午5点下班</div>`;
+                    }
+                } else {
+                    // 当前正在休息
+                    const nextWorkStart = currentResult.nextPeriodEnd;
+                    const workStartDate = new Date(nextWorkStart);
+                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    const dayAfterTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2);
+                    
+                    if (workStartDate.toDateString() === today.toDateString()) {
+                        resultHtml += `<div class="status-main resting">正在休息</div><div class="status-time">今天\n下午5点上班</div>`;
+                    } else if (workStartDate.toDateString() === tomorrow.toDateString()) {
+                        resultHtml += `<div class="status-main resting">正在休息</div><div class="status-time">明天\n下午5点上班</div>`;
+                    } else if (workStartDate.toDateString() === dayAfterTomorrow.toDateString()) {
+                        resultHtml += `<div class="status-main resting">正在休息</div><div class="status-time">后天\n下午5点上班</div>`;
+                    } else {
+                        // 更远的日期
+                        const month = workStartDate.getMonth() + 1;
+                        const day = workStartDate.getDate();
+                        resultHtml += `<div class="status-main resting">正在休息</div><div class="status-time">${month}/${day}\n下午5点上班</div>`;
+                    }
+                }
+
+                // 添加动态信息（仅今天）
+                const elapsedMs = now - currentResult.currentPeriodStart;
+                const remainingMs = currentResult.nextPeriodEnd - now;
+
+                const elapsedHM = formatHoursMinutes(elapsedMs);
+                const remainingHM = formatHoursMinutes(remainingMs);
+                const clockTime = format24HourTime(now); // 使用24小时制
+
+                const actionType = currentResult.isWorking ? '上班' : '休息';
+                const nextAction = currentResult.isWorking ? '下班' : '上班';
+
+                resultHtml += `
+                    <div class="dynamic-info">
+                        已${actionType} ${elapsedHM}<br>
+                        离${nextAction}还有 ${remainingHM}<br>
+                        <span class="real-time-clock">现在时间：${clockTime}</span>
+                    </div>
+                `;
+
+                // 启动实时刷新（只刷新动态信息部分，不刷新查询时间）
+                clearInterval(window.updateInterval);
+                window.updateInterval = setInterval(() => {
+                    // 重新获取当前时间
+                    const now = new Date();
+                    const currentResult = getShiftState(now);
+                    
+                    // 计算新的动态信息
+                    const elapsedMs = now - currentResult.currentPeriodStart;
+                    const remainingMs = currentResult.nextPeriodEnd - now;
+                    const elapsedHM = formatHoursMinutes(elapsedMs);
+                    const remainingHM = formatHoursMinutes(remainingMs);
+                    const clockTime = format24HourTime(now);
+                    
+                    const actionType = currentResult.isWorking ? '上班' : '休息';
+                    const nextAction = currentResult.isWorking ? '下班' : '上班';
+                    
+                    // 只更新动态信息部分
+                    const dynamicInfoElement = document.querySelector('#resultDisplay1 .dynamic-info');
+                    if(dynamicInfoElement) {
+                        dynamicInfoElement.innerHTML = `
+                            已${actionType} ${elapsedHM}<br>
+                            离${nextAction}还有 ${remainingHM}<br>
+                            <span class="real-time-clock">现在时间：${clockTime}</span>
+                        `;
+                    }
+                }, 1000);
+            } else {
+                // 查询非今天日期
+                if (queryResult.isWorking) {
+                    const shiftEnd = queryResult.nextPeriodEnd;
+                    if (shiftEnd.getFullYear() === queryDateObj.getFullYear() && shiftEnd.getMonth() === queryDateObj.getMonth() && shiftEnd.getDate() === queryDateObj.getDate()) {
+                        resultHtml += `<div class="status-main working">上班时间</div><div class="status-time">当天\n下午5点下班</div>`;
+                    } else {
+                        resultHtml += `<div class="status-main working">上班时间</div><div class="status-time">次日\n下午5点下班</div>`;
+                    }
+                } else {
+                    const nextWorkStart = queryResult.nextPeriodEnd;
+                    if (nextWorkStart.getFullYear() === queryDateObj.getFullYear() && nextWorkStart.getMonth() === queryDateObj.getMonth() && nextWorkStart.getDate() === queryDateObj.getDate()) {
+                        resultHtml += `<div class="status-main resting">休息时间</div><div class="status-time">当天\n下午5点上班</div>`;
+                    } else {
+                        resultHtml += `<div class="status-main resting">休息时间</div><div class="status-time">次日\n下午5点上班</div>`;
+                    }
+                }
+
+                clearInterval(window.updateInterval);
+            }
+
+            document.getElementById('resultDisplay1').innerHTML = resultHtml;
+        }
+        
+        // 第一个应用的快捷日期按钮功能
+        function setQuickDate(daysToAdd) {
+            const date = new Date();
+            date.setDate(date.getDate() + daysToAdd);
+            const formattedDate = date.toISOString().split('T')[0]; // 获取YYYY-MM-DD格式
+            document.getElementById('queryDate1').value = formattedDate;
+            queryShiftStatus1();
+        }
+        
+        // ========== 第二个应用：上下午班制 ==========
+        // 轮班系统参数 - 新规则
+        const SHIFT_START_DATE = new Date(2026, 0, 1, 8, 0, 0); // 从2026/1/1 上午8点开始
+        
+        // 获取指定日期的上班时间段
+        function getShiftHoursForDate(date) {
+            // 计算从开始日期到查询日期的天数差
+            const startDay = new Date(SHIFT_START_DATE.getFullYear(), SHIFT_START_DATE.getMonth(), SHIFT_START_DATE.getDate());
+            const queryDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const daysDiff = Math.floor((queryDay - startDay) / (1000 * 60 * 60 * 24));
+            
+            if (daysDiff < 0) {
+                return null; // 还没开始轮班
+            }
+            
+            // 如果是偶数天（从0开始计数），上午班；奇数天，下午班
+            if (daysDiff % 2 === 0) {
+                // 上午班：8:00-13:00
+                return {
+                    startHour: 8,
+                    startMinute: 0,
+                    endHour: 13,
+                    endMinute: 0,
+                    isMorningShift: true
+                };
+            } else {
+                // 下午班：13:00-18:00
+                return {
+                    startHour: 13,
+                    startMinute: 0,
+                    endHour: 18,
+                    endMinute: 0,
+                    isMorningShift: false
+                };
+            }
+        }
+        
+        // 获取某一天的上班开始和结束时间
+        function getShiftTimesForDate(date) {
+            const shiftHours = getShiftHoursForDate(date);
+            if (!shiftHours) {
+                return null;
+            }
+            
+            const shiftStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), shiftHours.startHour, shiftHours.startMinute, 0);
+            const shiftEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), shiftHours.endHour, shiftHours.endMinute, 0);
+            
+            return {
+                start: shiftStart,
+                end: shiftEnd,
+                isMorningShift: shiftHours.isMorningShift
+            };
+        }
+        
+        // 12小时制时间格式化函数（仅显示小时和分钟，用于上班时间）
+        function format12HourTimeHM(date) {
+            const hours = date.getHours();
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? '下午' : '上午';
+            const displayHours = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
+            return `${ampm} ${displayHours}:${minutes}`;
+        }
+        
+        // 将毫秒转换为"X小时X分钟X秒"
+        function formatTimeDuration(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            let result = '';
+            if (hours > 0) result += `${hours}小时`;
+            if (minutes > 0 || hours > 0) result += `${minutes}分钟`;
+            if (seconds > 0 || (hours === 0 && minutes === 0)) result += `${seconds}秒`;
+            
+            return result;
+        }
+        
+        function queryShiftStatus2() {
+            const queryDateInput = document.getElementById('queryDate2').value;
+            let queryDateObj;
+            
+            // 如果没有选择日期，则默认使用今天
+            if (!queryDateInput) {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const defaultDate = `${year}-${month}-${day}`;
+                document.getElementById('queryDate2').value = defaultDate;
+                queryDateObj = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            } else {
+                const [year, month, day] = queryDateInput.split('-').map(Number);
+                queryDateObj = new Date(year, month - 1, day);
+            }
+            
+            const now = new Date();
+            const isToday = queryDateObj.toDateString() === now.toDateString();
+            
+            // 显示用户选择的日期
+            let resultHtml = `<div class="status-title">${queryDateObj.getFullYear()}/${queryDateObj.getMonth() + 1}/${queryDateObj.getDate()}</div>`;
+            
+            // 添加查询时间
+            const currentTime24 = format24HourTime(now);
+            if (isToday) {
+                resultHtml += `<div class="query-time">今天 ${currentTime24} 查询</div>`;
+            } else {
+                resultHtml += `<div class="query-time">${queryDateObj.getFullYear()}/${queryDateObj.getMonth() + 1}/${queryDateObj.getDate()} ${currentTime24} 查询</div>`;
+            }
+            
+            // 获取查询日期的上班信息
+            const shiftTimes = getShiftTimesForDate(queryDateObj);
+            
+            if (!shiftTimes) {
+                // 还没有开始轮班
+                resultHtml += `
+                    <div class="status-main resting">尚未开始轮班</div>
+                    <div class="status-detail">轮班开始于\n2026/1/1 上午8点</div>
+                `;
+            } else if (isToday) {
+                // 查询的是今天
+                const shiftStart = shiftTimes.start;
+                const shiftEnd = shiftTimes.end;
+                const currentTime = now.getTime();
+                
+                // 获取今天的上班时间段信息
+                const shiftType = shiftTimes.isMorningShift ? "上午班 (8:00-13:00)" : "下午班 (13:00-18:00)";
+                resultHtml += `<div class="shift-time-info">今天上班时间：${shiftType}</div>`;
+                
+                // 判断当前是否在上班时间段内
+                if (currentTime >= shiftStart.getTime() && currentTime < shiftEnd.getTime()) {
+                    // 正在上班
+                    const remainingMs = shiftEnd.getTime() - currentTime;
+                    const remainingTime = formatTimeDuration(remainingMs);
+                    
+                    resultHtml += `
+                        <div class="status-main working">正在上班</div>
+                        <div class="status-time">${remainingTime}后下班</div>
+                    `;
+                } else if (currentTime < shiftStart.getTime()) {
+                    // 上班前
+                    const timeUntilShift = shiftStart.getTime() - currentTime;
+                    const timeUntil = formatTimeDuration(timeUntilShift);
+                    
+                    resultHtml += `
+                        <div class="status-main resting">正在休息</div>
+                        <div class="status-time">${timeUntil}后上班</div>
+                    `;
+                } else {
+                    // 已经下班，需要计算明天的上班时间
+                    const tomorrow = new Date(now);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    const tomorrowShift = getShiftTimesForDate(tomorrow);
+                    
+                    if (tomorrowShift) {
+                        const timeUntilNextShift = tomorrowShift.start.getTime() - currentTime;
+                        const timeUntil = formatTimeDuration(timeUntilNextShift);
+                        
+                        const tomorrowShiftType = tomorrowShift.isMorningShift ? "上午班 (8:00-13:00)" : "下午班 (13:00-18:00)";
+                        resultHtml += `
+                            <div class="status-main resting">正在休息</div>
+                            <div class="status-time">${timeUntil}后上班</div>
+                            <div class="status-detail">明天上班时间：${tomorrowShiftType}</div>
+                        `;
+                    }
+                }
+                
+                // 添加动态信息（仅今天）
+                const currentTimeFormatted = format12HourTime(now);
+                
+                resultHtml += `
+                    <div class="dynamic-info">
+                        <span class="real-time-clock">现在时间：${currentTimeFormatted}</span>
+                    </div>
+                `;
+                
+                // 启动实时刷新
+                clearInterval(window.updateInterval);
+                window.updateInterval = setInterval(() => {
+                    const now = new Date();
+                    const currentTime = now.getTime();
+                    const shiftStart = shiftTimes.start.getTime();
+                    const shiftEnd = shiftTimes.end.getTime();
+                    
+                    let dynamicInfo = '';
+                    
+                    if (currentTime >= shiftStart && currentTime < shiftEnd) {
+                        // 正在上班
+                        const remainingMs = shiftEnd - currentTime;
+                        const remainingTime = formatTimeDuration(remainingMs);
+                        const currentTimeFormatted = format12HourTime(now);
+                        
+                        dynamicInfo = `
+                            <div class="status-main working">正在上班</div>
+                            <div class="status-time">${remainingTime}后下班</div>
+                            <div class="dynamic-info">
+                                <span class="real-time-clock">现在时间：${currentTimeFormatted}</span>
+                            </div>
+                        `;
+                    } else if (currentTime < shiftStart) {
+                        // 上班前
+                        const timeUntilShift = shiftStart - currentTime;
+                        const timeUntil = formatTimeDuration(timeUntilShift);
+                        const currentTimeFormatted = format12HourTime(now);
+                        
+                        dynamicInfo = `
+                            <div class="status-main resting">正在休息</div>
+                            <div class="status-time">${timeUntil}后上班</div>
+                            <div class="dynamic-info">
+                                <span class="real-time-clock">现在时间：${currentTimeFormatted}</span>
+                            </div>
+                        `;
+                    } else {
+                        // 已经下班，计算明天的上班时间
+                        const tomorrow = new Date(now);
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        const tomorrowShift = getShiftTimesForDate(tomorrow);
+                        
+                        if (tomorrowShift) {
+                            const timeUntilNextShift = tomorrowShift.start.getTime() - currentTime;
+                            const timeUntil = formatTimeDuration(timeUntilNextShift);
+                            const currentTimeFormatted = format12HourTime(now);
+                            const tomorrowShiftType = tomorrowShift.isMorningShift ? "上午班 (8:00-13:00)" : "下午班 (13:00-18:00)";
+                            
+                            dynamicInfo = `
+                                <div class="status-main resting">正在休息</div>
+                                <div class="status-time">${timeUntil}后上班</div>
+                                <div class="status-detail">明天上班时间：${tomorrowShiftType}</div>
+                                <div class="dynamic-info">
+                                    <span class="real-time-clock">现在时间：${currentTimeFormatted}</span>
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    // 保留日期标题和查询时间
+                    const statusTitle = document.querySelector('#resultDisplay2 .status-title').outerHTML;
+                    const queryTime = document.querySelector('#resultDisplay2 .query-time').outerHTML;
+                    const shiftTimeInfo = document.querySelector('#resultDisplay2 .shift-time-info') ? document.querySelector('#resultDisplay2 .shift-time-info').outerHTML : '';
+                    
+                    document.getElementById('resultDisplay2').innerHTML = statusTitle + queryTime + (shiftTimeInfo || '') + dynamicInfo;
+                }, 1000);
+            } else {
+                // 查询非今天日期
+                if (shiftTimes) {
+                    const shiftStartFormatted = format12HourTimeHM(shiftTimes.start);
+                    const shiftEndFormatted = format12HourTimeHM(shiftTimes.end);
+                    const shiftType = shiftTimes.isMorningShift ? "上午班" : "下午班";
+                    
+                    resultHtml += `
+                        <div class="status-main working">上班时间</div>
+                        <div class="status-time">${shiftType}</div>
+                        <div class="status-detail">${shiftStartFormatted} - ${shiftEndFormatted}</div>
+                    `;
+                    
+                    clearInterval(window.updateInterval);
+                } else {
+                    resultHtml += `
+                        <div class="status-main resting">尚未开始轮班</div>
+                    `;
+                }
+            }
+            
+            document.getElementById('resultDisplay2').innerHTML = resultHtml;
+        }
+        
+        // 第二个应用的快捷日期按钮功能
+        function setQuickDate2(daysToAdd) {
+            const date = new Date();
+            date.setDate(date.getDate() + daysToAdd);
+            const formattedDate = date.toISOString().split('T')[0]; // 获取YYYY-MM-DD格式
+            document.getElementById('queryDate2').value = formattedDate;
+            queryShiftStatus2();
+        }
+        
+        // ========== 初始化函数 ==========
+        function initializeMode1() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            const queryDateInput = document.getElementById('queryDate1');
+            
+            if (queryDateInput) {
+                queryDateInput.value = formattedDate;
+                queryShiftStatus1();
+                
+                // 绑定日期变更事件
+                queryDateInput.removeEventListener('change', queryShiftStatus1);
+                queryDateInput.addEventListener('change', queryShiftStatus1);
+            }
+        }
+        
+        function initializeMode2() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            const queryDateInput = document.getElementById('queryDate2');
+            
+            if (queryDateInput) {
+                queryDateInput.value = formattedDate;
+                queryShiftStatus2();
+                
+                // 绑定日期变更事件
+                queryDateInput.removeEventListener('change', queryShiftStatus2);
+                queryDateInput.addEventListener('change', queryShiftStatus2);
+            }
+        }
+        
+        // ========== 页面加载初始化 ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMode1();
+        });
+    </script>
+</body>
+</html>
