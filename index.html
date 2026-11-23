@@ -106,7 +106,7 @@
 			display: flex;
 		}
 
-		/* 自定义城市模糊搜索下拉框 */
+		/* 自定义城市模糊搜索下拉框（电脑端下拉 + 手机端大弹窗） */
 		.city-combo {
 			position: relative;
 			display: inline-block;
@@ -129,25 +129,62 @@
 			pointer-events: none;
 		}
 
+		.city-backdrop {
+			display: none;
+			position: fixed;
+			inset: 0;
+			background: rgba(15, 23, 42, 0.45);
+			z-index: 1999;
+		}
+
+		.city-backdrop.open {
+			display: block;
+		}
+
 		.city-dropdown {
 			display: none;
 			position: absolute;
 			left: 0;
 			top: calc(100% + 4px);
 			width: 100%;
-			min-width: 150px;
-			max-height: 230px;
-			overflow-y: auto;
-			-webkit-overflow-scrolling: touch;
+			min-width: 155px;
 			background: #ffffff;
 			border: 1px solid #cbd5e1;
 			border-radius: 7px;
 			box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
-			z-index: 1000;
+			z-index: 2000;
+			overflow: hidden;
 		}
 
 		.city-dropdown.open {
-			display: block;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.city-modal-head {
+			display: none;
+		}
+
+		.city-list-scroll {
+			max-height: 240px;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+			overscroll-behavior: contain;
+			scrollbar-width: auto;
+			scrollbar-color: #94a3b8 #f1f5f9;
+		}
+
+		.city-list-scroll::-webkit-scrollbar {
+			width: 8px;
+		}
+
+		.city-list-scroll::-webkit-scrollbar-track {
+			background: #f1f5f9;
+		}
+
+		.city-list-scroll::-webkit-scrollbar-thumb {
+			background: #94a3b8;
+			border-radius: 4px;
 		}
 
 		.city-option {
@@ -173,7 +210,7 @@
 		}
 
 		.city-empty {
-			padding: 9px 10px;
+			padding: 12px 10px;
 			font-size: 13px;
 			color: #94a3b8;
 			text-align: center;
@@ -625,6 +662,89 @@
 				width: 100% !important;
 			}
 
+			/* 手机端弹出宽大易滑的城市选择面板 */
+			.city-dropdown.open {
+				position: fixed;
+				left: 5vw;
+				right: 5vw;
+				top: 12vh;
+				width: 90vw;
+				max-width: 420px;
+				margin: 0 auto;
+				max-height: 72vh;
+				border-radius: 12px;
+				box-shadow: 0 18px 40px rgba(15, 23, 42, 0.35);
+				z-index: 2001;
+			}
+
+			.city-modal-head {
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+				padding: 10px 12px;
+				background: #f8fafc;
+				border-bottom: 1px solid #e2e8f0;
+			}
+
+			.city-modal-top {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+
+			.city-modal-title {
+				font-size: 15px;
+				font-weight: 700;
+				color: #1f4e78;
+			}
+
+			.city-modal-close {
+				border: 1px solid #cbd5e1;
+				background: #ffffff;
+				color: #334155;
+				border-radius: 6px;
+				padding: 4px 10px;
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+			}
+
+			.city-modal-search {
+				width: 100%;
+				padding: 8px 10px;
+				border: 1px solid #93c5fd;
+				border-radius: 8px;
+				font-size: 16px !important;
+				background: #ffffff;
+				color: #111827;
+			}
+
+			.city-list-scroll {
+				max-height: calc(72vh - 96px);
+				overflow-y: scroll;
+				-webkit-overflow-scrolling: touch;
+				touch-action: pan-y;
+			}
+
+			.city-list-scroll::-webkit-scrollbar {
+				width: 12px;
+			}
+
+			.city-list-scroll::-webkit-scrollbar-track {
+				background: #e2e8f0;
+			}
+
+			.city-list-scroll::-webkit-scrollbar-thumb {
+				background: #64748b;
+				border-radius: 6px;
+				border: 2px solid #e2e8f0;
+			}
+
+			.city-option {
+				padding: 13px 16px;
+				font-size: 16px;
+			}
+
 			.pt-field.full-row,
 			.sh-field.full-row,
 			#pt-custom-angles.active {
@@ -701,6 +821,9 @@
 </head>
 
 <body>
+	<!-- 手机端城市选择遮罩 -->
+	<div id="city-backdrop" class="city-backdrop" onclick="closeAllCityDropdowns()"></div>
+
 	<!-- 界面一固定表头 -->
 	<div id="pt-fixed-header-bar" class="fixed-header-bar">
 		<table>
@@ -737,9 +860,19 @@
 						<span class="city-combo" id="pt-city-combo">
 							<input type="text" id="pt-city" placeholder="搜索或选择城市" autocomplete="off"
 								onfocus="openCityDropdown('pt')"
+								onclick="openCityDropdown('pt')"
 								oninput="onCitySearchInput('pt')">
 							<span class="city-combo-arrow">▼</span>
-							<div class="city-dropdown" id="pt-city-dropdown"></div>
+							<div class="city-dropdown" id="pt-city-dropdown">
+								<div class="city-modal-head">
+									<div class="city-modal-top">
+										<span class="city-modal-title">选择或搜索城市/区县</span>
+										<button type="button" class="city-modal-close" onclick="closeAllCityDropdowns()">关闭</button>
+									</div>
+									<input type="text" class="city-modal-search" id="pt-city-modal-search" placeholder="输入地名搜索（如：银川、敦煌）" autocomplete="off" oninput="onModalSearchInput('pt')">
+								</div>
+								<div class="city-list-scroll" id="pt-city-list"></div>
+							</div>
 						</span>
 					</label>
 					<label class="pt-field">纬度
@@ -813,9 +946,19 @@
 							<span class="city-combo" id="sh-city-combo">
 								<input type="text" id="sh-city" placeholder="搜索或选择城市" autocomplete="off"
 									onfocus="openCityDropdown('sh')"
+									onclick="openCityDropdown('sh')"
 									oninput="onCitySearchInput('sh')">
 								<span class="city-combo-arrow">▼</span>
-								<div class="city-dropdown" id="sh-city-dropdown"></div>
+								<div class="city-dropdown" id="sh-city-dropdown">
+									<div class="city-modal-head">
+										<div class="city-modal-top">
+											<span class="city-modal-title">选择或搜索城市/区县</span>
+											<button type="button" class="city-modal-close" onclick="closeAllCityDropdowns()">关闭</button>
+										</div>
+										<input type="text" class="city-modal-search" id="sh-city-modal-search" placeholder="输入地名搜索（如：银川、敦煌）" autocomplete="off" oninput="onModalSearchInput('sh')">
+									</div>
+									<div class="city-list-scroll" id="sh-city-list"></div>
+								</div>
 							</span>
 						</label>
 						<label class="sh-field">纬度
@@ -1293,9 +1436,13 @@
 			{ name: '琼中', lat: 19.03, lng: 109.84, tz: 'Asia/Shanghai' }
 		];
 
-		// ==================== 模糊搜索下拉选择框逻辑 ====================
+		// ==================== 模糊搜索下拉选择框逻辑（电脑下拉 + 手机大浮层） ====================
+		function isMobileScreen() {
+			return window.innerWidth <= 640;
+		}
+
 		function renderCityDropdown(prefix, keyword) {
-			const dropdown = document.getElementById(`${prefix}-city-dropdown`);
+			const listWrap = document.getElementById(`${prefix}-city-list`);
 			const currentText = document.getElementById(`${prefix}-city`).value.trim();
 			const q = (keyword !== undefined ? keyword : '').trim();
 
@@ -1303,12 +1450,12 @@
 				? CITY_DATA.filter((item) => item.name.includes(q))
 				: CITY_DATA;
 
-			dropdown.innerHTML = '';
+			listWrap.innerHTML = '';
 			if (list.length === 0) {
 				const empty = document.createElement('div');
 				empty.className = 'city-empty';
 				empty.textContent = '无匹配城市';
-				dropdown.appendChild(empty);
+				listWrap.appendChild(empty);
 				return;
 			}
 
@@ -1316,37 +1463,63 @@
 				const div = document.createElement('div');
 				div.className = 'city-option' + (city.name === currentText ? ' active' : '');
 				div.textContent = city.name;
-				// 使用 pointerdown/mousedown 避免 blur 先触发关闭导致点不到
-				div.addEventListener('pointerdown', (e) => {
+				div.addEventListener('click', (e) => {
 					e.preventDefault();
+					e.stopPropagation();
 					selectCityItem(prefix, city);
 				});
-				dropdown.appendChild(div);
+				listWrap.appendChild(div);
 			});
 		}
 
 		function openCityDropdown(prefix) {
 			closeAllCityDropdowns(prefix);
-			const inputVal = document.getElementById(`${prefix}-city`).value.trim();
+			const mainInput = document.getElementById(`${prefix}-city`);
+			const modalSearch = document.getElementById(`${prefix}-city-modal-search`);
+			const inputVal = mainInput.value.trim();
 			const isExactCity = CITY_DATA.some((c) => c.name === inputVal);
-			// 若当前框里已经是完整选中的城市名，点击时展示全部列表方便切换；否则按当前输入筛选
-			renderCityDropdown(prefix, isExactCity ? '' : inputVal);
+			const initialKeyword = isExactCity ? '' : inputVal;
+
+			if (modalSearch) {
+				modalSearch.value = initialKeyword;
+			}
+
+			renderCityDropdown(prefix, initialKeyword);
 			document.getElementById(`${prefix}-city-dropdown`).classList.add('open');
+
+			if (isMobileScreen()) {
+				document.getElementById('city-backdrop').classList.add('open');
+				// 手机端避免外层框抢焦点，交由弹窗内部处理
+				mainInput.blur();
+			}
 		}
 
 		function closeAllCityDropdowns(exceptPrefix = '') {
+			let anyOpen = false;
 			['pt', 'sh'].forEach((p) => {
+				const dd = document.getElementById(`${p}-city-dropdown`);
+				if (!dd) return;
 				if (p !== exceptPrefix) {
-					const dd = document.getElementById(`${p}-city-dropdown`);
-					if (dd) dd.classList.remove('open');
+					dd.classList.remove('open');
+				} else if (dd.classList.contains('open')) {
+					anyOpen = true;
 				}
 			});
+			if (!anyOpen) {
+				document.getElementById('city-backdrop').classList.remove('open');
+			}
 		}
 
 		function onCitySearchInput(prefix) {
 			const val = document.getElementById(`${prefix}-city`).value;
+			const modalSearch = document.getElementById(`${prefix}-city-modal-search`);
+			if (modalSearch) modalSearch.value = val;
+
 			renderCityDropdown(prefix, val);
 			document.getElementById(`${prefix}-city-dropdown`).classList.add('open');
+			if (isMobileScreen()) {
+				document.getElementById('city-backdrop').classList.add('open');
+			}
 
 			const exact = CITY_DATA.find((c) => c.name === val.trim());
 			if (exact) {
@@ -1356,8 +1529,17 @@
 			}
 		}
 
+		function onModalSearchInput(prefix) {
+			const modalSearch = document.getElementById(`${prefix}-city-modal-search`);
+			const val = modalSearch ? modalSearch.value : '';
+			document.getElementById(`${prefix}-city`).value = val;
+			renderCityDropdown(prefix, val);
+		}
+
 		function selectCityItem(prefix, city) {
 			document.getElementById(`${prefix}-city`).value = city.name;
+			const modalSearch = document.getElementById(`${prefix}-city-modal-search`);
+			if (modalSearch) modalSearch.value = '';
 			closeAllCityDropdowns();
 			applyCityCoords(prefix, city);
 		}
@@ -1663,7 +1845,7 @@
 		}
 
 		// ==================== 本地设置记忆 ====================
-		const STORAGE_KEY = 'PRAYER_SHADOW_WEB_V4';
+		const STORAGE_KEY = 'PRAYER_SHADOW_WEB_V5';
 
 		function saveUserPrefs() {
 			try {
@@ -2204,9 +2386,9 @@
 				el.addEventListener('change', shRenderAll);
 			});
 
-			// 点击页面空白处收起城市下拉列表
-			document.addEventListener('pointerdown', (e) => {
-				if (!e.target.closest('.city-combo')) {
+			// 电脑端点击空白处收起城市下拉列表
+			document.addEventListener('click', (e) => {
+				if (!e.target.closest('.city-combo') && !e.target.closest('.city-dropdown')) {
 					closeAllCityDropdowns();
 				}
 			});
