@@ -1,820 +1,2420 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>轮班状态查询</title>
-    <style>
-        body {
-            font-family: 'Microsoft YaHei', Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        
-        .container {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 100%;
-            max-width: 600px;
-        }
-        
-        .header {
-            color: #1a5276;
-            font-size: 28px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .mode-switcher {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 25px;
-            gap: 10px;
-        }
-        
-        .mode-btn {
-            padding: 12px 24px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s;
-            min-width: 120px;
-        }
-        
-        .mode-btn:hover {
-            background-color: #2980b9;
-        }
-        
-        .mode-btn.active {
-            background-color: #1a5276;
-            font-weight: bold;
-        }
-        
-        .app-content {
-            transition: opacity 0.3s;
-        }
-        
-        .quick-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        
-        .quick-btn {
-            flex: 1;
-            margin: 0 5px;
-            padding: 10px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        
-        .quick-btn:hover {
-            background-color: #2980b9;
-        }
-        
-        .date-input {
-            width: 100%;
-            margin-bottom: 30px;
-            position: relative;
-        }
-        
-        input[type="date"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        
-        .result-container {
-            margin-top: 20px;
-            padding: 20px;
-            border-top: 1px solid #eee;
-            text-align: center;
-        }
-        
-        .status-title {
-            color: black;
-            font-size: 24px;
-            margin-bottom: 10px;
-            white-space: pre-line;
-        }
-        
-        .query-time {
-            color: #666;
-            font-size: 18px;
-            margin-bottom: 15px;
-            font-style: italic;
-        }
-        
-        .status-main {
-            font-size: 28px;
-            font-weight: bold;
-            margin: 15px 0;
-        }
-        
-        .working {
-            color: red;
-        }
-        
-        .resting {
-            color: green;
-        }
-        
-        .status-time {
-            color: black;
-            font-size: 24px;
-            margin-bottom: 10px;
-            white-space: pre-line;
-        }
-        
-        .status-detail {
-            color: #555;
-            font-size: 18px;
-            margin: 5px 0;
-        }
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+	<title>礼拜与影长</title>
+	<meta name="application-name" content="礼拜与影长">
+	<meta name="apple-mobile-web-app-title" content="礼拜与影长">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="theme-color" content="#1f4e78">
+	<meta name="author" content="Hamid Zarrabi-Zadeh">
 
-        .dynamic-info {
-            margin-top: 15px;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #333;
-        }
+	<!-- 内置主屏幕应用图标（无需额外图片文件） -->
+	<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%231f4e78'/%3E%3Ccircle cx='256' cy='230' r='118' fill='%23f59e0b' opacity='0.22'/%3E%3Cpath d='M292 128a112 112 0 1 0 98 164 92 92 0 1 1-98-164z' fill='%23fbbf24'/%3E%3Cline x1='120' y1='380' x2='392' y2='380' stroke='%23ffffff' stroke-width='20' stroke-linecap='round'/%3E%3Cline x1='256' y1='265' x2='256' y2='380' stroke='%23ffffff' stroke-width='20' stroke-linecap='round'/%3E%3Cline x1='256' y1='380' x2='356' y2='380' stroke='%2393c5fd' stroke-width='20' stroke-linecap='round'/%3E%3C/svg%3E">
+	<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%231f4e78'/%3E%3Ccircle cx='256' cy='230' r='118' fill='%23f59e0b' opacity='0.22'/%3E%3Cpath d='M292 128a112 112 0 1 0 98 164 92 92 0 1 1-98-164z' fill='%23fbbf24'/%3E%3Cline x1='120' y1='380' x2='392' y2='380' stroke='%23ffffff' stroke-width='20' stroke-linecap='round'/%3E%3Cline x1='256' y1='265' x2='256' y2='380' stroke='%23ffffff' stroke-width='20' stroke-linecap='round'/%3E%3Cline x1='256' y1='380' x2='356' y2='380' stroke='%2393c5fd' stroke-width='20' stroke-linecap='round'/%3E%3C/svg%3E">
 
-        .real-time-clock {
-            margin-top: 8px;
-            font-style: italic;
-            color: #666;
-        }
-        
-        .shift-time-info {
-            margin-top: 10px;
-            color: #444;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        
-        .mode-description {
-            text-align: center;
-            color: #666;
-            font-style: italic;
-            margin-bottom: 20px;
-            font-size: 14px;
-            min-height: 20px;
-        }
-        
-        .hidden {
-            display: none;
-        }
-    </style>
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			padding: calc(14px + env(safe-area-inset-top)) 12px calc(32px + env(safe-area-inset-bottom)) 12px;
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+			background-color: #f4f6f9;
+			color: #1f2937;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			-webkit-tap-highlight-color: transparent;
+		}
+
+		.page-wrapper {
+			width: 100%;
+			max-width: 1180px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		/* 顶部模式切换栏 */
+		.mode-bar {
+			width: 100%;
+			max-width: 1120px;
+			background: #ffffff;
+			border: 1px solid #d9e0ea;
+			border-radius: 10px;
+			padding: 12px 16px;
+			margin-bottom: 14px;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			align-items: center;
+			gap: 10px 14px;
+		}
+
+		.mode-title {
+			font-size: 16px;
+			font-weight: 700;
+			color: #111827;
+		}
+
+		.mode-switch-group {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+
+		.mode-btn {
+			padding: 8px 14px;
+			min-height: 38px;
+			border: 1px solid #cbd5e1;
+			border-radius: 7px;
+			background: #f8fafc;
+			color: #334155;
+			font-size: 14px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.15s ease;
+		}
+
+		.mode-btn:hover {
+			background: #e2e8f0;
+		}
+
+		.mode-btn.active {
+			background: #1f4e78;
+			border-color: #1f4e78;
+			color: #ffffff;
+		}
+
+		.view-section {
+			display: none;
+			width: 100%;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.view-section.active {
+			display: flex;
+		}
+
+		/* 自定义城市模糊搜索下拉框（电脑端下拉 + 手机端大弹窗） */
+		.city-combo {
+			position: relative;
+			display: inline-block;
+			width: 142px;
+			max-width: 100%;
+		}
+
+		.city-combo input {
+			width: 100% !important;
+			padding-right: 24px !important;
+		}
+
+		.city-combo-arrow {
+			position: absolute;
+			right: 8px;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 11px;
+			color: #64748b;
+			pointer-events: none;
+		}
+
+		.city-backdrop {
+			display: none;
+			position: fixed;
+			inset: 0;
+			background: rgba(15, 23, 42, 0.45);
+			z-index: 1999;
+		}
+
+		.city-backdrop.open {
+			display: block;
+		}
+
+		.city-dropdown {
+			display: none;
+			position: absolute;
+			left: 0;
+			top: calc(100% + 4px);
+			width: 100%;
+			min-width: 155px;
+			background: #ffffff;
+			border: 1px solid #cbd5e1;
+			border-radius: 7px;
+			box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+			z-index: 2000;
+			overflow: hidden;
+		}
+
+		.city-dropdown.open {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.city-modal-head {
+			display: none;
+		}
+
+		.city-list-scroll {
+			max-height: 240px;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+			overscroll-behavior: contain;
+			scrollbar-width: auto;
+			scrollbar-color: #94a3b8 #f1f5f9;
+		}
+
+		.city-list-scroll::-webkit-scrollbar {
+			width: 8px;
+		}
+
+		.city-list-scroll::-webkit-scrollbar-track {
+			background: #f1f5f9;
+		}
+
+		.city-list-scroll::-webkit-scrollbar-thumb {
+			background: #94a3b8;
+			border-radius: 4px;
+		}
+
+		.city-option {
+			padding: 8px 10px;
+			font-size: 14px;
+			color: #1f2937;
+			cursor: pointer;
+			border-bottom: 1px solid #f1f5f9;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.city-option:last-child {
+			border-bottom: none;
+		}
+
+		.city-option:hover,
+		.city-option.active {
+			background: #e8f0fe;
+			color: #1d4ed8;
+			font-weight: 600;
+		}
+
+		.city-empty {
+			padding: 12px 10px;
+			font-size: 13px;
+			color: #94a3b8;
+			text-align: center;
+		}
+
+		/* ---------------- 界面一：祈祷时间计算 ---------------- */
+		.pt-header {
+			width: 100%;
+			max-width: 1120px;
+			background: #fff;
+			padding: 14px 16px;
+			border: 1px solid #d9dee7;
+			border-radius: 10px;
+			margin-bottom: 14px;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+		}
+
+		.pt-form {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			align-items: center;
+			gap: 10px 14px;
+		}
+
+		.pt-field {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			font-size: 14px;
+			color: #1f2937;
+		}
+
+		.pt-form input,
+		.pt-form select {
+			padding: 6px 9px;
+			min-height: 36px;
+			border: 1px solid #c5cdd8;
+			border-radius: 6px;
+			font-size: 14px;
+			background: #fff;
+			color: #111827;
+		}
+
+		#pt-timezone,
+		#sh-timezone {
+			width: 152px;
+			max-width: 100%;
+		}
+
+		#pt-custom-angles {
+			display: none;
+			align-items: center;
+			gap: 10px 12px;
+			background-color: #f0f5ff;
+			border: 1px solid #b8cef8;
+			padding: 6px 10px;
+			border-radius: 7px;
+		}
+
+		#pt-custom-angles.active {
+			display: inline-flex;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+
+		table.pt-caption {
+			width: 100%;
+			max-width: 840px;
+			margin: 0 auto 10px auto;
+			border-collapse: collapse;
+			text-align: center;
+		}
+
+		table.pt-caption td {
+			padding: 6px 8px;
+			font-size: 17px;
+			font-weight: 600;
+		}
+
+		table.pt-caption a.arrow {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 38px;
+			height: 36px;
+			padding: 0 10px;
+			color: #2563eb;
+			text-decoration: none;
+			font-weight: bold;
+			border-radius: 6px;
+			background: #fff;
+			border: 1px solid #d9e0ea;
+		}
+
+		table.pt-caption a.arrow:hover {
+			background-color: #e8f0fe;
+		}
+
+		.pt-table-wrap {
+			width: 100%;
+			max-width: 840px;
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+			border-radius: 8px;
+		}
+
+		table.pt-timetable {
+			width: 100%;
+			margin: 0 auto;
+			border-collapse: collapse;
+			background-color: #fff;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+		}
+
+		table.pt-timetable th,
+		table.pt-timetable td {
+			border: 1px solid #cfd6e0;
+			padding: 8px 9px;
+			text-align: center;
+			font-size: 14px;
+			white-space: nowrap;
+		}
+
+		table.pt-timetable tr.head-row td,
+		table.pt-timetable th {
+			background-color: #1f4e78;
+			color: #fff;
+			font-weight: 600;
+		}
+
+		table.pt-timetable tbody tr:nth-child(even):not(.head-row):not(.today-row) {
+			background-color: #f9fbff;
+		}
+
+		table.pt-timetable tbody tr:hover:not(.head-row) {
+			background-color: #eef4ff;
+		}
+
+		table.pt-timetable tr.today-row {
+			background-color: #fff3cd;
+			font-weight: 600;
+		}
+
+		.footer-bar {
+			margin-top: 16px;
+			text-align: center;
+			font-size: 13px;
+			color: #555;
+			line-height: 1.6;
+		}
+
+		.footer-bar a {
+			color: #2563eb;
+			text-decoration: none;
+			font-weight: 600;
+			padding: 2px 4px;
+		}
+
+		.footer-bar a:hover {
+			text-decoration: underline;
+		}
+
+		.install-tip {
+			width: 100%;
+			max-width: 840px;
+			margin-top: 14px;
+			padding: 10px 14px;
+			background: #eef4ff;
+			border: 1px solid #c7d9fc;
+			border-radius: 8px;
+			font-size: 12.5px;
+			color: #1e3a8a;
+			line-height: 1.6;
+			text-align: center;
+		}
+
+		/* ---------------- 界面二：正午与晡礼影长计算 ---------------- */
+		.sh-container {
+			width: 100%;
+			max-width: 1180px;
+		}
+
+		.sh-card {
+			background: #ffffff;
+			border: 1px solid #d9e0ea;
+			border-radius: 10px;
+			padding: 16px 18px;
+			margin-bottom: 14px;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+		}
+
+		.sh-card h1 {
+			margin: 0 0 14px 0;
+			font-size: 18px;
+			text-align: center;
+			color: #111827;
+			line-height: 1.4;
+		}
+
+		.sh-controls {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			align-items: center;
+			gap: 10px 14px;
+		}
+
+		.sh-field {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			font-size: 14px;
+			color: #1f2937;
+		}
+
+		.sh-field input,
+		.sh-field select {
+			padding: 6px 9px;
+			min-height: 36px;
+			border: 1px solid #c5cdd8;
+			border-radius: 6px;
+			font-size: 14px;
+			background: #fff;
+			color: #111827;
+		}
+
+		.sh-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 12px;
+		}
+
+		.sh-box {
+			border: 1px solid #e2e8f0;
+			background: #f8fafc;
+			border-radius: 8px;
+			padding: 12px;
+			text-align: center;
+		}
+
+		.sh-box.hanafi {
+			border-color: #93c5fd;
+			background: #eff6ff;
+		}
+
+		.sh-box-title {
+			font-size: 13px;
+			color: #475569;
+			margin-bottom: 5px;
+			font-weight: 600;
+		}
+
+		.sh-box-main {
+			font-size: 20px;
+			font-weight: 700;
+			color: #0f172a;
+			margin-bottom: 5px;
+		}
+
+		.sh-box.hanafi .sh-box-main {
+			color: #1d4ed8;
+		}
+
+		.sh-box-sub {
+			font-size: 13px;
+			color: #334155;
+			line-height: 1.55;
+		}
+
+		.sh-table-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 10px;
+			flex-wrap: wrap;
+			gap: 8px 12px;
+		}
+
+		.sh-month-nav {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			font-size: 16px;
+			font-weight: 600;
+			flex-wrap: wrap;
+		}
+
+		.sh-nav-btn {
+			padding: 6px 12px;
+			min-height: 34px;
+			border: 1px solid #cbd5e1;
+			background: #fff;
+			color: #2563eb;
+			border-radius: 6px;
+			cursor: pointer;
+			font-weight: bold;
+			font-size: 13px;
+		}
+
+		.sh-nav-btn:hover {
+			background: #eff6ff;
+		}
+
+		.sh-table-wrap {
+			width: 100%;
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+			border-radius: 8px;
+		}
+
+		table.sh-data-table {
+			width: 100%;
+			border-collapse: collapse;
+			background: #fff;
+		}
+
+		table.sh-data-table th,
+		table.sh-data-table td {
+			border: 1px solid #cfd6e0;
+			padding: 8px 9px;
+			text-align: center;
+			font-size: 14px;
+			white-space: nowrap;
+		}
+
+		table.sh-data-table th {
+			background-color: #1f4e78;
+			color: #fff;
+			font-weight: 600;
+		}
+
+		table.sh-data-table tbody tr:nth-child(even):not(.selected-row) {
+			background-color: #f9fbff;
+		}
+
+		table.sh-data-table tbody tr:hover:not(.selected-row) {
+			background-color: #eef4ff;
+		}
+
+		table.sh-data-table tr.selected-row {
+			background-color: #fef3c7;
+			font-weight: 600;
+		}
+
+		.sh-note {
+			margin-top: 10px;
+			font-size: 12px;
+			color: #64748b;
+			text-align: center;
+			line-height: 1.6;
+		}
+
+		.fixed-header-bar {
+			display: none;
+			position: fixed;
+			top: 0;
+			z-index: 999;
+			overflow: hidden;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+			background: #1f4e78;
+		}
+
+		.fixed-header-bar table {
+			border-collapse: collapse;
+			background: #1f4e78;
+		}
+
+		.fixed-header-bar th {
+			border: 1px solid #3a6d99;
+			padding: 8px 9px;
+			text-align: center;
+			font-size: 14px;
+			font-weight: 600;
+			color: #fff;
+			white-space: nowrap;
+			background-color: #1f4e78;
+		}
+
+		/* ==================== 手机端专属适配 ==================== */
+		@media (max-width: 640px) {
+			body {
+				padding: calc(10px + env(safe-area-inset-top)) 8px calc(28px + env(safe-area-inset-bottom)) 8px;
+			}
+
+			.mode-bar {
+				padding: 10px 12px;
+				border-radius: 8px;
+			}
+
+			.mode-title {
+				width: 100%;
+				font-size: 15px;
+				text-align: center;
+			}
+
+			.mode-switch-group {
+				width: 100%;
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 8px;
+			}
+
+			.mode-btn {
+				width: 100%;
+				padding: 8px 6px;
+				font-size: 13px;
+				text-align: center;
+			}
+
+			.pt-header,
+			.sh-card {
+				padding: 12px;
+				border-radius: 8px;
+			}
+
+			.sh-card h1 {
+				font-size: 16px;
+				margin-bottom: 12px;
+			}
+
+			input,
+			select {
+				font-size: 16px !important;
+			}
+
+			.pt-form,
+			.sh-controls {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 10px 8px;
+				align-items: stretch;
+			}
+
+			.pt-field,
+			.sh-field {
+				flex-direction: column;
+				align-items: stretch;
+				gap: 4px;
+				font-size: 12px;
+				color: #4b5563;
+			}
+
+			.city-combo,
+			.pt-field input,
+			.pt-field select,
+			.sh-field input,
+			.sh-field select {
+				width: 100% !important;
+			}
+
+			/* 手机端弹出宽大易滑的城市选择面板 */
+			.city-dropdown.open {
+				position: fixed;
+				left: 5vw;
+				right: 5vw;
+				top: 12vh;
+				width: 90vw;
+				max-width: 420px;
+				margin: 0 auto;
+				max-height: 72vh;
+				border-radius: 12px;
+				box-shadow: 0 18px 40px rgba(15, 23, 42, 0.35);
+				z-index: 2001;
+			}
+
+			.city-modal-head {
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+				padding: 10px 12px;
+				background: #f8fafc;
+				border-bottom: 1px solid #e2e8f0;
+			}
+
+			.city-modal-top {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+
+			.city-modal-title {
+				font-size: 15px;
+				font-weight: 700;
+				color: #1f4e78;
+			}
+
+			.city-modal-close {
+				border: 1px solid #cbd5e1;
+				background: #ffffff;
+				color: #334155;
+				border-radius: 6px;
+				padding: 4px 10px;
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+			}
+
+			.city-modal-search {
+				width: 100%;
+				padding: 8px 10px;
+				border: 1px solid #93c5fd;
+				border-radius: 8px;
+				font-size: 16px !important;
+				background: #ffffff;
+				color: #111827;
+			}
+
+			.city-list-scroll {
+				max-height: calc(72vh - 96px);
+				overflow-y: scroll;
+				-webkit-overflow-scrolling: touch;
+				touch-action: pan-y;
+			}
+
+			.city-list-scroll::-webkit-scrollbar {
+				width: 12px;
+			}
+
+			.city-list-scroll::-webkit-scrollbar-track {
+				background: #e2e8f0;
+			}
+
+			.city-list-scroll::-webkit-scrollbar-thumb {
+				background: #64748b;
+				border-radius: 6px;
+				border: 2px solid #e2e8f0;
+			}
+
+			.city-option {
+				padding: 13px 16px;
+				font-size: 16px;
+			}
+
+			.pt-field.full-row,
+			.sh-field.full-row,
+			#pt-custom-angles.active {
+				grid-column: 1 / -1;
+				width: 100%;
+			}
+
+			#pt-custom-angles.active {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 8px;
+			}
+
+			#pt-custom-angles label {
+				display: flex;
+				flex-direction: column;
+				gap: 4px;
+				font-size: 12px;
+				color: #1e3a8a;
+			}
+
+			#pt-custom-angles input {
+				width: 100% !important;
+			}
+
+			table.pt-caption td {
+				font-size: 15px;
+				padding: 4px;
+			}
+
+			.sh-grid {
+				grid-template-columns: 1fr 1fr;
+				gap: 8px;
+			}
+
+			.sh-box {
+				padding: 10px 8px;
+			}
+
+			.sh-box-title {
+				font-size: 12px;
+			}
+
+			.sh-box-main {
+				font-size: 17px;
+			}
+
+			.sh-box-sub {
+				font-size: 12px;
+			}
+
+			.sh-month-nav {
+				width: 100%;
+				justify-content: space-between;
+				font-size: 15px;
+			}
+
+			table.pt-timetable th,
+			table.pt-timetable td,
+			table.sh-data-table th,
+			table.sh-data-table td,
+			.fixed-header-bar th {
+				padding: 7px 7px;
+				font-size: 13px;
+			}
+		}
+
+		@media (max-width: 380px) {
+			.sh-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">轮班状态查询</div>
-        
-        <div class="mode-switcher">
-            <button class="mode-btn active" id="mode1Btn" onclick="switchMode(1)">轮班查询</button>
-            <button class="mode-btn" id="mode2Btn" onclick="switchMode(2)">上下午查询</button>
-        </div>
-        
-        <div class="mode-description" id="modeDescription">24小时上班，48小时休息</div>
-        
-        <!-- 第一个应用：24/48轮班制 -->
-        <div class="app-content" id="app1">
-            <div class="quick-buttons">
-                <button class="quick-btn" onclick="setQuickDate(0)">今天</button>
-                <button class="quick-btn" onclick="setQuickDate(1)">明天</button>
-                <button class="quick-btn" onclick="setQuickDate(2)">后天</button>
-            </div>
-            
-            <div class="date-input">
-                <input type="date" id="queryDate1">
-            </div>
-            
-            <div class="result-container" id="resultDisplay1">
-                <p>等待查询...</p>
-            </div>
-        </div>
-        
-        <!-- 第二个应用：上下午班制 -->
-        <div class="app-content hidden" id="app2">
-            <div class="quick-buttons">
-                <button class="quick-btn" onclick="setQuickDate2(0)">今天</button>
-                <button class="quick-btn" onclick="setQuickDate2(1)">明天</button>
-                <button class="quick-btn" onclick="setQuickDate2(2)">后天</button>
-            </div>
-            
-            <div class="date-input">
-                <input type="date" id="queryDate2">
-            </div>
-            
-            <div class="result-container" id="resultDisplay2">
-                <p>等待查询...</p>
-            </div>
-        </div>
-    </div>
+	<!-- 手机端城市选择遮罩 -->
+	<div id="city-backdrop" class="city-backdrop" onclick="closeAllCityDropdowns()"></div>
 
-    <script>
-        // ========== 模式切换功能 ==========
-        let currentMode = 1;
-        
-        function switchMode(mode) {
-            if (currentMode === mode) return;
-            
-            // 更新按钮状态
-            document.getElementById('mode1Btn').classList.remove('active');
-            document.getElementById('mode2Btn').classList.remove('active');
-            document.getElementById(`mode${mode}Btn`).classList.add('active');
-            
-            // 隐藏当前应用
-            document.getElementById(`app${currentMode}`).classList.add('hidden');
-            // 显示新应用
-            document.getElementById(`app${mode}`).classList.remove('hidden');
-            
-            currentMode = mode;
-            
-            // 更新模式描述
-            updateModeDescription(mode);
-            
-            // 停止当前定时器
-            clearInterval(window.updateInterval);
-            
-            // 初始化对应模式
-            if (mode === 1) {
-                initializeMode1();
-            } else if (mode === 2) {
-                initializeMode2();
-            }
-        }
-        
-        function updateModeDescription(mode) {
-            const descElement = document.getElementById('modeDescription');
-            if (mode === 1) {
-                descElement.textContent = '24小时上班，48小时休息';
-            } else if (mode === 2) {
-                descElement.textContent = '每天上班，分上午班(8:00-13:00)和下午班(13:00-18:00)';
-            }
-        }
-        
-        // ========== 第一个应用：24/48轮班制 ==========
-        // 轮班系统参数
-        const SHIFT_START = new Date(2025, 4, 21, 17, 0, 0); // 从2025/5/21 下午5点开始
-        const SHIFT_DURATION = 24 * 60 * 60 * 1000; // 24小时班次
-        const REST_DURATION = 48 * 60 * 60 * 1000; // 48小时休息
-        const FULL_CYCLE = SHIFT_DURATION + REST_DURATION; // 72小时总周期
-        
-        // 计算指定时间点的轮班状态
-        function getShiftState(dateTime) {
-            const timeDiff = dateTime - SHIFT_START;
-            
-            if (timeDiff < 0) {
-                return { state: 'before_start' };
-            }
-            
-            const cyclesElapsed = Math.floor(timeDiff / FULL_CYCLE);
-            const timeInCurrentCycle = timeDiff % FULL_CYCLE;
-            const isWorking = timeInCurrentCycle < SHIFT_DURATION;
-            
-            const currentCycleStart = new Date(SHIFT_START.getTime() + cyclesElapsed * FULL_CYCLE);
-            
-            let currentPeriodStart;
-            let nextPeriodEnd;
-            
-            if (isWorking) {
-                currentPeriodStart = currentCycleStart;
-                nextPeriodEnd = new Date(currentPeriodStart.getTime() + SHIFT_DURATION);
-            } else {
-                currentPeriodStart = new Date(currentCycleStart.getTime() + SHIFT_DURATION);
-                nextPeriodEnd = new Date(currentPeriodStart.getTime() + REST_DURATION);
-            }
-            
-            return {
-                isWorking,
-                currentPeriodStart,
-                nextPeriodEnd,
-                cyclesElapsed
-            };
-        }
+	<!-- 界面一固定表头 -->
+	<div id="pt-fixed-header-bar" class="fixed-header-bar">
+		<table>
+			<thead>
+				<tr id="pt-fixed-header-row"></tr>
+			</thead>
+		</table>
+	</div>
 
-        // 24小时制时间格式化函数
-        function format24HourTime(date) {
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            const seconds = date.getSeconds().toString().padStart(2, '0');
-            return `${hours}:${minutes}:${seconds}`;
-        }
+	<!-- 界面二固定表头 -->
+	<div id="sh-fixed-header-bar" class="fixed-header-bar">
+		<table>
+			<thead>
+				<tr id="sh-fixed-header-row"></tr>
+			</thead>
+		</table>
+	</div>
 
-        // 12小时制时间格式化函数（用于上班/下班时间显示）
-        function format12HourTime(date) {
-            const hours = date.getHours();
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            const seconds = date.getSeconds().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? '下午' : '上午';
-            const displayHours = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
-            return `${ampm} ${displayHours}:${minutes}:${seconds}`;
-        }
+	<div class="page-wrapper">
+		<!-- 顶部双界面切换栏 -->
+		<div class="mode-bar">
+			<div class="mode-title" id="current-mode-title">月度礼拜时间表</div>
+			<div class="mode-switch-group">
+				<button type="button" id="btn-view-prayer" class="mode-btn active" onclick="switchView('prayer')">祈祷时间计算</button>
+				<button type="button" id="btn-view-shadow" class="mode-btn" onclick="switchView('shadow')">正午与晡礼影长计算</button>
+			</div>
+		</div>
 
-        // 将毫秒转换为"X小时Y分钟"
-        function formatHoursMinutes(ms) {
-            const totalMinutes = Math.floor(ms / (1000 * 60));
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-            return `${hours}小时${minutes}分钟`;
-        }
+		<!-- ================= 界面一：祈祷时间计算（默认打开） ================= -->
+		<section id="view-prayer" class="view-section active">
+			<div class="pt-header">
+				<form class="pt-form" action="javascript:ptUpdate();">
+					<label class="pt-field">城市
+						<span class="city-combo" id="pt-city-combo">
+							<input type="text" id="pt-city" placeholder="搜索或选择城市" autocomplete="off"
+								onfocus="openCityDropdown('pt')"
+								onclick="openCityDropdown('pt')"
+								oninput="onCitySearchInput('pt')">
+							<span class="city-combo-arrow">▼</span>
+							<div class="city-dropdown" id="pt-city-dropdown">
+								<div class="city-modal-head">
+									<div class="city-modal-top">
+										<span class="city-modal-title">选择或搜索城市/区县</span>
+										<button type="button" class="city-modal-close" onclick="closeAllCityDropdowns()">关闭</button>
+									</div>
+									<input type="text" class="city-modal-search" id="pt-city-modal-search" placeholder="输入地名搜索（如：银川、敦煌）" autocomplete="off" oninput="onModalSearchInput('pt')">
+								</div>
+								<div class="city-list-scroll" id="pt-city-list"></div>
+							</div>
+						</span>
+					</label>
+					<label class="pt-field">纬度
+						<input type="text" inputmode="decimal" value="40.741428" id="pt-latitude" size="10" placeholder="纬度" oninput="onCoordManualChange('pt')" onchange="ptUpdate();">
+					</label>
+					<label class="pt-field">经度
+						<input type="text" inputmode="decimal" value="107.385986" id="pt-longitude" size="10" placeholder="经度" oninput="onCoordManualChange('pt')" onchange="ptUpdate();">
+					</label>
+					<label class="pt-field">时区
+						<select id="pt-timezone" onchange="ptUpdate();"></select>
+					</label>
+					<label class="pt-field">计算方式
+						<select id="pt-method" onchange="ptOnMethodChange()">
+							<option value="MWL">世界穆斯林联盟 (MWL)</option>
+							<option value="ISNA" selected="selected">北美伊斯兰协会 (ISNA)</option>
+							<option value="Egypt">埃及测量局 (Egypt)</option>
+							<option value="Makkah">麦加乌姆古拉大学 (Makkah)</option>
+							<option value="Karachi">卡拉奇伊斯兰科学大学 (Karachi)</option>
+							<option value="Tehran">德黑兰大学地球物理研究所 (Tehran)</option>
+							<option value="Jafari">库姆莱瓦研究所 / 贾法里派 (Jafari)</option>
+							<option value="France">法国穆斯林组织 (France)</option>
+							<option value="Russia">俄罗斯穆斯林精神管理局 (Russia)</option>
+							<option value="Singapore">新加坡伊斯兰宗教理事会 (Singapore)</option>
+							<option value="Custom">自定义角度 (Custom)</option>
+						</select>
+					</label>
+					<span id="pt-custom-angles">
+						<label>晨礼角度
+							<input type="number" inputmode="decimal" step="0.1" min="0" max="30" value="18" id="pt-fajr-angle" style="width: 72px;" onchange="ptUpdate();" oninput="ptUpdate();">
+						</label>
+						<label>宵礼角度
+							<input type="number" inputmode="decimal" step="0.1" min="0" max="30" value="17" id="pt-isha-angle" style="width: 72px;" onchange="ptUpdate();" oninput="ptUpdate();">
+						</label>
+					</span>
+					<label class="pt-field">晡礼算法
+						<select id="pt-asr" onchange="ptUpdate()">
+							<option value="Hanafi" selected="selected">哈乃斐派 (影子 2 倍 / Hanafi)</option>
+							<option value="Standard">标准算法 (影子 1 倍 / Standard)</option>
+						</select>
+					</label>
+				</form>
+			</div>
 
-        function queryShiftStatus1() {
-            const queryDateInput = document.getElementById('queryDate1').value;
-            let queryDateObj;
-            
-            // 如果没有选择日期，则默认使用今天
-            if (!queryDateInput) {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const day = String(now.getDate()).padStart(2, '0');
-                const defaultDate = `${year}-${month}-${day}`;
-                document.getElementById('queryDate1').value = defaultDate;
-                queryDateObj = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            } else {
-                const [year, month, day] = queryDateInput.split('-').map(Number);
-                queryDateObj = new Date(year, month - 1, day);
-            }
-            
-            const now = new Date();
-            const isToday = queryDateObj.toDateString() === now.toDateString();
+			<table class="pt-caption">
+				<tr>
+					<td style="width: 48px;"><a href="javascript:ptDisplayMonth(-1)" class="arrow" title="上个月">&lt;</a></td>
+					<td id="pt-table-title"></td>
+					<td style="width: 48px;"><a href="javascript:ptDisplayMonth(1)" class="arrow" title="下个月">&gt;</a></td>
+				</tr>
+			</table>
 
-            // 显示用户选择的日期（不带时间）
-            let resultHtml = `<div class="status-title">${queryDateObj.getFullYear()}/${queryDateObj.getMonth() + 1}/${queryDateObj.getDate()}</div>`;
+			<div class="pt-table-wrap" id="pt-table-wrap">
+				<table id="pt-timetable" class="pt-timetable">
+					<tbody></tbody>
+				</table>
+			</div>
 
-            // 添加查询时间（24小时制，静态显示 - 使用查询时的时间）
-            const currentTime24 = format24HourTime(now);
-            if(isToday) {
-                resultHtml += `<div class="query-time">今天 ${currentTime24} 查询</div>`;
-            } else {
-                resultHtml += `<div class="query-time">${queryDateObj.getFullYear()}/${queryDateObj.getMonth() + 1}/${queryDateObj.getDate()} ${currentTime24} 查询</div>`;
-            }
+			<div class="footer-bar">
+				数据来源：<a href="https://praytimes.org">PrayTimes.org</a> |
+				时间制式：<a id="pt-time-format" href="javascript:ptSwitchFormat()" title="点击切换 12/24 小时制"></a>
+			</div>
+		</section>
 
-            // 使用中午12点作为该日代表时间进行状态判断
-            const queryDateTime = new Date(queryDateObj.getFullYear(), queryDateObj.getMonth(), queryDateObj.getDate(), 12, 0, 0);
-            const queryResult = getShiftState(queryDateTime);
+		<!-- ================= 界面二：经纬度与物长计算正午及晡礼影长 ================= -->
+		<section id="view-shadow" class="view-section">
+			<div class="sh-container">
+				<div class="sh-card">
+					<h1>已知经纬度与物长 — 计算正午及晡礼影长、高度角与时刻</h1>
+					<div class="sh-controls">
+						<label class="sh-field">城市
+							<span class="city-combo" id="sh-city-combo">
+								<input type="text" id="sh-city" placeholder="搜索或选择城市" autocomplete="off"
+									onfocus="openCityDropdown('sh')"
+									onclick="openCityDropdown('sh')"
+									oninput="onCitySearchInput('sh')">
+								<span class="city-combo-arrow">▼</span>
+								<div class="city-dropdown" id="sh-city-dropdown">
+									<div class="city-modal-head">
+										<div class="city-modal-top">
+											<span class="city-modal-title">选择或搜索城市/区县</span>
+											<button type="button" class="city-modal-close" onclick="closeAllCityDropdowns()">关闭</button>
+										</div>
+										<input type="text" class="city-modal-search" id="sh-city-modal-search" placeholder="输入地名搜索（如：银川、敦煌）" autocomplete="off" oninput="onModalSearchInput('sh')">
+									</div>
+									<div class="city-list-scroll" id="sh-city-list"></div>
+								</div>
+							</span>
+						</label>
+						<label class="sh-field">纬度
+							<input type="number" inputmode="decimal" step="0.000001" min="-90" max="90" id="sh-latitude" value="40.741428" style="width: 112px;">
+						</label>
+						<label class="sh-field">经度
+							<input type="number" inputmode="decimal" step="0.000001" min="-180" max="180" id="sh-longitude" value="107.385986" style="width: 112px;">
+						</label>
+						<label class="sh-field">时区
+							<select id="sh-timezone"></select>
+						</label>
+						<label class="sh-field">日期
+							<input type="date" id="sh-target-date">
+						</label>
+						<label class="sh-field">物长 (h)
+							<input type="number" inputmode="decimal" step="any" min="0.0001" id="sh-object-length" value="10" style="width: 88px;">
+						</label>
+						<label class="sh-field">长度单位
+							<select id="sh-unit">
+								<option value="cm" selected>厘米 (cm)</option>
+								<option value="m">米 (m)</option>
+								<option value="mm">毫米 (mm)</option>
+							</select>
+						</label>
+					</div>
+				</div>
 
-            if (queryResult.state === 'before_start') {
-                resultHtml += `
-                    <div class="status-main resting">尚未开始轮班</div>
-                    <div class="status-detail">首个班次开始于\n2025/5/21 下午5点</div>
-                `;
-            } else if (isToday) {
-                // 实时计算当前状态（使用 now）
-                const currentResult = getShiftState(now);
-                
-                if (currentResult.isWorking) {
-                    // 当前正在上班
-                    const shiftEnd = currentResult.nextPeriodEnd;
-                    const shiftEndDate = new Date(shiftEnd);
-                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-                    const dayAfterTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2);
-                    
-                    if (shiftEndDate.toDateString() === today.toDateString()) {
-                        resultHtml += `<div class="status-main working">正在上班</div><div class="status-time">今天\n下午5点下班</div>`;
-                    } else if (shiftEndDate.toDateString() === tomorrow.toDateString()) {
-                        resultHtml += `<div class="status-main working">正在上班</div><div class="status-time">明天\n下午5点下班</div>`;
-                    } else {
-                        resultHtml += `<div class="status-main working">正在上班</div><div class="status-time">后天\n下午5点下班</div>`;
-                    }
-                } else {
-                    // 当前正在休息
-                    const nextWorkStart = currentResult.nextPeriodEnd;
-                    const workStartDate = new Date(nextWorkStart);
-                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-                    const dayAfterTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2);
-                    
-                    if (workStartDate.toDateString() === today.toDateString()) {
-                        resultHtml += `<div class="status-main resting">正在休息</div><div class="status-time">今天\n下午5点上班</div>`;
-                    } else if (workStartDate.toDateString() === tomorrow.toDateString()) {
-                        resultHtml += `<div class="status-main resting">正在休息</div><div class="status-time">明天\n下午5点上班</div>`;
-                    } else if (workStartDate.toDateString() === dayAfterTomorrow.toDateString()) {
-                        resultHtml += `<div class="status-main resting">正在休息</div><div class="status-time">后天\n下午5点上班</div>`;
-                    } else {
-                        // 更远的日期
-                        const month = workStartDate.getMonth() + 1;
-                        const day = workStartDate.getDate();
-                        resultHtml += `<div class="status-main resting">正在休息</div><div class="status-time">${month}/${day}\n下午5点上班</div>`;
-                    }
-                }
+				<div class="sh-card">
+					<div class="sh-grid">
+						<div class="sh-box">
+							<div class="sh-box-title">当地正午影长（最短影长）</div>
+							<div class="sh-box-main" id="sh-noon-shadow">-</div>
+							<div class="sh-box-sub" id="sh-noon-sub">正午时刻：-<br>正午太阳高度角：-</div>
+						</div>
 
-                // 添加动态信息（仅今天）
-                const elapsedMs = now - currentResult.currentPeriodStart;
-                const remainingMs = currentResult.nextPeriodEnd - now;
+						<div class="sh-box hanafi">
+							<div class="sh-box-title">哈乃斐派晡礼（+2h）</div>
+							<div class="sh-box-main" id="sh-hanafi-shadow">-</div>
+							<div class="sh-box-sub" id="sh-hanafi-sub">晡礼时刻：-<br>晡礼太阳高度角：-</div>
+						</div>
 
-                const elapsedHM = formatHoursMinutes(elapsedMs);
-                const remainingHM = formatHoursMinutes(remainingMs);
-                const clockTime = format24HourTime(now); // 使用24小时制
+						<div class="sh-box">
+							<div class="sh-box-title">标准算法晡礼（+1h）</div>
+							<div class="sh-box-main" id="sh-standard-shadow">-</div>
+							<div class="sh-box-sub" id="sh-standard-sub">晡礼时刻：-<br>晡礼太阳高度角：-</div>
+						</div>
 
-                const actionType = currentResult.isWorking ? '上班' : '休息';
-                const nextAction = currentResult.isWorking ? '下班' : '上班';
+						<div class="sh-box">
+							<div class="sh-box-title">当日天文参考</div>
+							<div class="sh-box-main" id="sh-declination-main">-</div>
+							<div class="sh-box-sub" id="sh-declination-sub">当日太阳赤纬<br>哈乃斐比标准晚：-</div>
+						</div>
+					</div>
+				</div>
 
-                resultHtml += `
-                    <div class="dynamic-info">
-                        已${actionType} ${elapsedHM}<br>
-                        离${nextAction}还有 ${remainingHM}<br>
-                        <span class="real-time-clock">现在时间：${clockTime}</span>
-                    </div>
-                `;
+				<div class="sh-card" style="margin-bottom: 0;">
+					<div class="sh-table-header">
+						<div class="sh-month-nav">
+							<button type="button" class="sh-nav-btn" onclick="shShiftMonth(-1)" title="上个月">&lt; 上月</button>
+							<span id="sh-month-title">-</span>
+							<button type="button" class="sh-nav-btn" onclick="shShiftMonth(1)" title="下个月">下月 &gt;</button>
+						</div>
+						<div style="font-size: 12px; color: #4b5563;">
+							黄色高亮为所选日期 · 表格可左右滑动 · 下滑固定表头
+						</div>
+					</div>
 
-                // 启动实时刷新（只刷新动态信息部分，不刷新查询时间）
-                clearInterval(window.updateInterval);
-                window.updateInterval = setInterval(() => {
-                    // 重新获取当前时间
-                    const now = new Date();
-                    const currentResult = getShiftState(now);
-                    
-                    // 计算新的动态信息
-                    const elapsedMs = now - currentResult.currentPeriodStart;
-                    const remainingMs = currentResult.nextPeriodEnd - now;
-                    const elapsedHM = formatHoursMinutes(elapsedMs);
-                    const remainingHM = formatHoursMinutes(remainingMs);
-                    const clockTime = format24HourTime(now);
-                    
-                    const actionType = currentResult.isWorking ? '上班' : '休息';
-                    const nextAction = currentResult.isWorking ? '下班' : '上班';
-                    
-                    // 只更新动态信息部分
-                    const dynamicInfoElement = document.querySelector('#resultDisplay1 .dynamic-info');
-                    if(dynamicInfoElement) {
-                        dynamicInfoElement.innerHTML = `
-                            已${actionType} ${elapsedHM}<br>
-                            离${nextAction}还有 ${remainingHM}<br>
-                            <span class="real-time-clock">现在时间：${clockTime}</span>
-                        `;
-                    }
-                }, 1000);
-            } else {
-                // 查询非今天日期
-                if (queryResult.isWorking) {
-                    const shiftEnd = queryResult.nextPeriodEnd;
-                    if (shiftEnd.getFullYear() === queryDateObj.getFullYear() && shiftEnd.getMonth() === queryDateObj.getMonth() && shiftEnd.getDate() === queryDateObj.getDate()) {
-                        resultHtml += `<div class="status-main working">上班时间</div><div class="status-time">当天\n下午5点下班</div>`;
-                    } else {
-                        resultHtml += `<div class="status-main working">上班时间</div><div class="status-time">次日\n下午5点下班</div>`;
-                    }
-                } else {
-                    const nextWorkStart = queryResult.nextPeriodEnd;
-                    if (nextWorkStart.getFullYear() === queryDateObj.getFullYear() && nextWorkStart.getMonth() === queryDateObj.getMonth() && nextWorkStart.getDate() === queryDateObj.getDate()) {
-                        resultHtml += `<div class="status-main resting">休息时间</div><div class="status-time">当天\n下午5点上班</div>`;
-                    } else {
-                        resultHtml += `<div class="status-main resting">休息时间</div><div class="status-time">次日\n下午5点上班</div>`;
-                    }
-                }
+					<div class="sh-table-wrap" id="sh-table-wrap">
+						<table class="sh-data-table" id="sh-main-table">
+							<thead>
+								<tr id="sh-main-header-row">
+									<th>日期</th>
+									<th>正午时刻</th>
+									<th>正午高度角</th>
+									<th>正午影长</th>
+									<th>哈乃斐晡礼时刻</th>
+									<th>哈乃斐影长</th>
+									<th>哈乃斐高度角</th>
+									<th>标准晡礼时刻</th>
+									<th>标准影长</th>
+									<th>标准高度角</th>
+								</tr>
+							</thead>
+							<tbody id="sh-month-tbody"></tbody>
+						</table>
+					</div>
+					<div class="sh-note">
+						说明：水平地面正午最短影长 S<sub>正午</sub> = h × |tan(纬度 − 赤纬)|；晡礼影长 S<sub>asr</sub> = S<sub>正午</sub> + k·h（哈乃斐 k = 2，标准 k = 1），对应太阳高度角 α = arctan(h / S<sub>asr</sub>)。
+					</div>
+				</div>
 
-                clearInterval(window.updateInterval);
-            }
+				<div class="footer-bar">
+					时间制式：<a id="sh-time-format" href="javascript:shSwitchFormat()" title="点击切换 12/24 小时制">24小时制</a>
+				</div>
+			</div>
+		</section>
 
-            document.getElementById('resultDisplay1').innerHTML = resultHtml;
-        }
-        
-        // 第一个应用的快捷日期按钮功能
-        function setQuickDate(daysToAdd) {
-            const date = new Date();
-            date.setDate(date.getDate() + daysToAdd);
-            const formattedDate = date.toISOString().split('T')[0]; // 获取YYYY-MM-DD格式
-            document.getElementById('queryDate1').value = formattedDate;
-            queryShiftStatus1();
-        }
-        
-        // ========== 第二个应用：上下午班制 ==========
-        // 轮班系统参数 - 新规则
-        const SHIFT_START_DATE = new Date(2026, 0, 1, 8, 0, 0); // 从2026/1/1 上午8点开始
-        
-        // 获取指定日期的上班时间段
-        function getShiftHoursForDate(date) {
-            // 计算从开始日期到查询日期的天数差
-            const startDay = new Date(SHIFT_START_DATE.getFullYear(), SHIFT_START_DATE.getMonth(), SHIFT_START_DATE.getDate());
-            const queryDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            const daysDiff = Math.floor((queryDay - startDay) / (1000 * 60 * 60 * 24));
-            
-            if (daysDiff < 0) {
-                return null; // 还没开始轮班
-            }
-            
-            // 如果是偶数天（从0开始计数），上午班；奇数天，下午班
-            if (daysDiff % 2 === 0) {
-                // 上午班：8:00-13:00
-                return {
-                    startHour: 8,
-                    startMinute: 0,
-                    endHour: 13,
-                    endMinute: 0,
-                    isMorningShift: true
-                };
-            } else {
-                // 下午班：13:00-18:00
-                return {
-                    startHour: 13,
-                    startMinute: 0,
-                    endHour: 18,
-                    endMinute: 0,
-                    isMorningShift: false
-                };
-            }
-        }
-        
-        // 获取某一天的上班开始和结束时间
-        function getShiftTimesForDate(date) {
-            const shiftHours = getShiftHoursForDate(date);
-            if (!shiftHours) {
-                return null;
-            }
-            
-            const shiftStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), shiftHours.startHour, shiftHours.startMinute, 0);
-            const shiftEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), shiftHours.endHour, shiftHours.endMinute, 0);
-            
-            return {
-                start: shiftStart,
-                end: shiftEnd,
-                isMorningShift: shiftHours.isMorningShift
-            };
-        }
-        
-        // 12小时制时间格式化函数（仅显示小时和分钟，用于上班时间）
-        function format12HourTimeHM(date) {
-            const hours = date.getHours();
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? '下午' : '上午';
-            const displayHours = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
-            return `${ampm} ${displayHours}:${minutes}`;
-        }
-        
-        // 将毫秒转换为"X小时X分钟X秒"
-        function formatTimeDuration(ms) {
-            const totalSeconds = Math.floor(ms / 1000);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            
-            let result = '';
-            if (hours > 0) result += `${hours}小时`;
-            if (minutes > 0 || hours > 0) result += `${minutes}分钟`;
-            if (seconds > 0 || (hours === 0 && minutes === 0)) result += `${seconds}秒`;
-            
-            return result;
-        }
-        
-        function queryShiftStatus2() {
-            const queryDateInput = document.getElementById('queryDate2').value;
-            let queryDateObj;
-            
-            // 如果没有选择日期，则默认使用今天
-            if (!queryDateInput) {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const day = String(now.getDate()).padStart(2, '0');
-                const defaultDate = `${year}-${month}-${day}`;
-                document.getElementById('queryDate2').value = defaultDate;
-                queryDateObj = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            } else {
-                const [year, month, day] = queryDateInput.split('-').map(Number);
-                queryDateObj = new Date(year, month - 1, day);
-            }
-            
-            const now = new Date();
-            const isToday = queryDateObj.toDateString() === now.toDateString();
-            
-            // 显示用户选择的日期
-            let resultHtml = `<div class="status-title">${queryDateObj.getFullYear()}/${queryDateObj.getMonth() + 1}/${queryDateObj.getDate()}</div>`;
-            
-            // 添加查询时间
-            const currentTime24 = format24HourTime(now);
-            if (isToday) {
-                resultHtml += `<div class="query-time">今天 ${currentTime24} 查询</div>`;
-            } else {
-                resultHtml += `<div class="query-time">${queryDateObj.getFullYear()}/${queryDateObj.getMonth() + 1}/${queryDateObj.getDate()} ${currentTime24} 查询</div>`;
-            }
-            
-            // 获取查询日期的上班信息
-            const shiftTimes = getShiftTimesForDate(queryDateObj);
-            
-            if (!shiftTimes) {
-                // 还没有开始轮班
-                resultHtml += `
-                    <div class="status-main resting">尚未开始轮班</div>
-                    <div class="status-detail">轮班开始于\n2026/1/1 上午8点</div>
-                `;
-            } else if (isToday) {
-                // 查询的是今天
-                const shiftStart = shiftTimes.start;
-                const shiftEnd = shiftTimes.end;
-                const currentTime = now.getTime();
-                
-                // 获取今天的上班时间段信息
-                const shiftType = shiftTimes.isMorningShift ? "上午班 (8:00-13:00)" : "下午班 (13:00-18:00)";
-                resultHtml += `<div class="shift-time-info">今天上班时间：${shiftType}</div>`;
-                
-                // 判断当前是否在上班时间段内
-                if (currentTime >= shiftStart.getTime() && currentTime < shiftEnd.getTime()) {
-                    // 正在上班
-                    const remainingMs = shiftEnd.getTime() - currentTime;
-                    const remainingTime = formatTimeDuration(remainingMs);
-                    
-                    resultHtml += `
-                        <div class="status-main working">正在上班</div>
-                        <div class="status-time">${remainingTime}后下班</div>
-                    `;
-                } else if (currentTime < shiftStart.getTime()) {
-                    // 上班前
-                    const timeUntilShift = shiftStart.getTime() - currentTime;
-                    const timeUntil = formatTimeDuration(timeUntilShift);
-                    
-                    resultHtml += `
-                        <div class="status-main resting">正在休息</div>
-                        <div class="status-time">${timeUntil}后上班</div>
-                    `;
-                } else {
-                    // 已经下班，需要计算明天的上班时间
-                    const tomorrow = new Date(now);
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    const tomorrowShift = getShiftTimesForDate(tomorrow);
-                    
-                    if (tomorrowShift) {
-                        const timeUntilNextShift = tomorrowShift.start.getTime() - currentTime;
-                        const timeUntil = formatTimeDuration(timeUntilNextShift);
-                        
-                        const tomorrowShiftType = tomorrowShift.isMorningShift ? "上午班 (8:00-13:00)" : "下午班 (13:00-18:00)";
-                        resultHtml += `
-                            <div class="status-main resting">正在休息</div>
-                            <div class="status-time">${timeUntil}后上班</div>
-                            <div class="status-detail">明天上班时间：${tomorrowShiftType}</div>
-                        `;
-                    }
-                }
-                
-                // 添加动态信息（仅今天）
-                const currentTimeFormatted = format12HourTime(now);
-                
-                resultHtml += `
-                    <div class="dynamic-info">
-                        <span class="real-time-clock">现在时间：${currentTimeFormatted}</span>
-                    </div>
-                `;
-                
-                // 启动实时刷新
-                clearInterval(window.updateInterval);
-                window.updateInterval = setInterval(() => {
-                    const now = new Date();
-                    const currentTime = now.getTime();
-                    const shiftStart = shiftTimes.start.getTime();
-                    const shiftEnd = shiftTimes.end.getTime();
-                    
-                    let dynamicInfo = '';
-                    
-                    if (currentTime >= shiftStart && currentTime < shiftEnd) {
-                        // 正在上班
-                        const remainingMs = shiftEnd - currentTime;
-                        const remainingTime = formatTimeDuration(remainingMs);
-                        const currentTimeFormatted = format12HourTime(now);
-                        
-                        dynamicInfo = `
-                            <div class="status-main working">正在上班</div>
-                            <div class="status-time">${remainingTime}后下班</div>
-                            <div class="dynamic-info">
-                                <span class="real-time-clock">现在时间：${currentTimeFormatted}</span>
-                            </div>
-                        `;
-                    } else if (currentTime < shiftStart) {
-                        // 上班前
-                        const timeUntilShift = shiftStart - currentTime;
-                        const timeUntil = formatTimeDuration(timeUntilShift);
-                        const currentTimeFormatted = format12HourTime(now);
-                        
-                        dynamicInfo = `
-                            <div class="status-main resting">正在休息</div>
-                            <div class="status-time">${timeUntil}后上班</div>
-                            <div class="dynamic-info">
-                                <span class="real-time-clock">现在时间：${currentTimeFormatted}</span>
-                            </div>
-                        `;
-                    } else {
-                        // 已经下班，计算明天的上班时间
-                        const tomorrow = new Date(now);
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        const tomorrowShift = getShiftTimesForDate(tomorrow);
-                        
-                        if (tomorrowShift) {
-                            const timeUntilNextShift = tomorrowShift.start.getTime() - currentTime;
-                            const timeUntil = formatTimeDuration(timeUntilNextShift);
-                            const currentTimeFormatted = format12HourTime(now);
-                            const tomorrowShiftType = tomorrowShift.isMorningShift ? "上午班 (8:00-13:00)" : "下午班 (13:00-18:00)";
-                            
-                            dynamicInfo = `
-                                <div class="status-main resting">正在休息</div>
-                                <div class="status-time">${timeUntil}后上班</div>
-                                <div class="status-detail">明天上班时间：${tomorrowShiftType}</div>
-                                <div class="dynamic-info">
-                                    <span class="real-time-clock">现在时间：${currentTimeFormatted}</span>
-                                </div>
-                            `;
-                        }
-                    }
-                    
-                    // 保留日期标题和查询时间
-                    const statusTitle = document.querySelector('#resultDisplay2 .status-title').outerHTML;
-                    const queryTime = document.querySelector('#resultDisplay2 .query-time').outerHTML;
-                    const shiftTimeInfo = document.querySelector('#resultDisplay2 .shift-time-info') ? document.querySelector('#resultDisplay2 .shift-time-info').outerHTML : '';
-                    
-                    document.getElementById('resultDisplay2').innerHTML = statusTitle + queryTime + (shiftTimeInfo || '') + dynamicInfo;
-                }, 1000);
-            } else {
-                // 查询非今天日期
-                if (shiftTimes) {
-                    const shiftStartFormatted = format12HourTimeHM(shiftTimes.start);
-                    const shiftEndFormatted = format12HourTimeHM(shiftTimes.end);
-                    const shiftType = shiftTimes.isMorningShift ? "上午班" : "下午班";
-                    
-                    resultHtml += `
-                        <div class="status-main working">上班时间</div>
-                        <div class="status-time">${shiftType}</div>
-                        <div class="status-detail">${shiftStartFormatted} - ${shiftEndFormatted}</div>
-                    `;
-                    
-                    clearInterval(window.updateInterval);
-                } else {
-                    resultHtml += `
-                        <div class="status-main resting">尚未开始轮班</div>
-                    `;
-                }
-            }
-            
-            document.getElementById('resultDisplay2').innerHTML = resultHtml;
-        }
-        
-        // 第二个应用的快捷日期按钮功能
-        function setQuickDate2(daysToAdd) {
-            const date = new Date();
-            date.setDate(date.getDate() + daysToAdd);
-            const formattedDate = date.toISOString().split('T')[0]; // 获取YYYY-MM-DD格式
-            document.getElementById('queryDate2').value = formattedDate;
-            queryShiftStatus2();
-        }
-        
-        // ========== 初始化函数 ==========
-        function initializeMode1() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const formattedDate = `${year}-${month}-${day}`;
-            const queryDateInput = document.getElementById('queryDate1');
-            
-            if (queryDateInput) {
-                queryDateInput.value = formattedDate;
-                queryShiftStatus1();
-                
-                // 绑定日期变更事件
-                queryDateInput.removeEventListener('change', queryShiftStatus1);
-                queryDateInput.addEventListener('change', queryShiftStatus1);
-            }
-        }
-        
-        function initializeMode2() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const formattedDate = `${year}-${month}-${day}`;
-            const queryDateInput = document.getElementById('queryDate2');
-            
-            if (queryDateInput) {
-                queryDateInput.value = formattedDate;
-                queryShiftStatus2();
-                
-                // 绑定日期变更事件
-                queryDateInput.removeEventListener('change', queryShiftStatus2);
-                queryDateInput.addEventListener('change', queryShiftStatus2);
-            }
-        }
-        
-        // ========== 页面加载初始化 ==========
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeMode1();
-        });
-    </script>
+		<!-- 主屏幕添加提示 -->
+		<div id="install-tip-bar" class="install-tip">
+			手机桌面快捷方式：使用手机浏览器（iPhone 用 Safari，安卓用 Chrome/Edge）打开本网页后，点击浏览器菜单中的<strong>“添加到主屏幕”</strong>，即可在桌面生成独立应用图标随时打开。
+		</div>
+	</div>
+
+	<script>
+		// ==================== 时区固定偏移映射（无夏令时，UTC+8 仅保留一项） ====================
+		const TIMEZONE_LIST = [
+			{ value: 'Asia/Shanghai', label: 'UTC+8 (北京时间)', offset: 8 },
+			{ value: 'Asia/Urumqi', label: 'UTC+6 (新疆)', offset: 6 },
+			{ value: 'Asia/Tokyo', label: 'UTC+9 (东京)', offset: 9 },
+			{ value: 'Asia/Bangkok', label: 'UTC+7 (曼谷)', offset: 7 },
+			{ value: 'Asia/Dubai', label: 'UTC+4 (迪拜)', offset: 4 },
+			{ value: 'Asia/Riyadh', label: 'UTC+3 (利雅得)', offset: 3 },
+			{ value: 'Asia/Tehran', label: 'UTC+3:30 (德黑兰)', offset: 3.5 },
+			{ value: 'Asia/Karachi', label: 'UTC+5 (卡拉奇)', offset: 5 },
+			{ value: 'Asia/Kolkata', label: 'UTC+5:30 (印度)', offset: 5.5 },
+			{ value: 'Europe/London', label: 'UTC+0 (伦敦)', offset: 0 },
+			{ value: 'Europe/Paris', label: 'UTC+1 (巴黎)', offset: 1 },
+			{ value: 'America/New_York', label: 'UTC-5 (美东)', offset: -5 },
+			{ value: 'America/Chicago', label: 'UTC-6 (美中)', offset: -6 },
+			{ value: 'America/Denver', label: 'UTC-7 (美山)', offset: -7 },
+			{ value: 'America/Los_Angeles', label: 'UTC-8 (美西)', offset: -8 },
+			{ value: 'Australia/Sydney', label: 'UTC+10 (悉尼)', offset: 10 },
+			{ value: 'UTC', label: 'UTC+0 (协调世界时)', offset: 0 }
+		];
+
+		function getTimezoneOffsetHours(tzValue) {
+			const found = TIMEZONE_LIST.find((item) => item.value === tzValue);
+			return found ? found.offset : 8;
+		}
+
+		// ==================== 宁夏、甘肃、青海、内蒙、云南、海南 主要城市及区县经纬度 ====================
+		const CITY_DATA = [
+			// 宁夏
+			{ name: '银川', lat: 38.47, lng: 106.27, tz: 'Asia/Shanghai' },
+			{ name: '永宁', lat: 38.28, lng: 106.24, tz: 'Asia/Shanghai' },
+			{ name: '贺兰', lat: 38.55, lng: 106.35, tz: 'Asia/Shanghai' },
+			{ name: '灵武', lat: 38.10, lng: 106.34, tz: 'Asia/Shanghai' },
+			{ name: '石嘴山', lat: 39.04, lng: 106.39, tz: 'Asia/Shanghai' },
+			{ name: '平罗', lat: 38.91, lng: 106.54, tz: 'Asia/Shanghai' },
+			{ name: '陶乐', lat: 38.82, lng: 106.69, tz: 'Asia/Shanghai' },
+			{ name: '吴忠', lat: 37.99, lng: 106.21, tz: 'Asia/Shanghai' },
+			{ name: '青铜峡', lat: 38.02, lng: 106.07, tz: 'Asia/Shanghai' },
+			{ name: '盐池', lat: 37.78, lng: 107.41, tz: 'Asia/Shanghai' },
+			{ name: '同心', lat: 36.97, lng: 105.94, tz: 'Asia/Shanghai' },
+			{ name: '中卫', lat: 37.51, lng: 105.18, tz: 'Asia/Shanghai' },
+			{ name: '中宁', lat: 37.48, lng: 105.66, tz: 'Asia/Shanghai' },
+			{ name: '海原', lat: 36.56, lng: 105.64, tz: 'Asia/Shanghai' },
+			{ name: '固原', lat: 36.01, lng: 106.28, tz: 'Asia/Shanghai' },
+			{ name: '西吉', lat: 35.97, lng: 105.70, tz: 'Asia/Shanghai' },
+			{ name: '隆德', lat: 35.63, lng: 106.11, tz: 'Asia/Shanghai' },
+			{ name: '泾源', lat: 35.50, lng: 106.33, tz: 'Asia/Shanghai' },
+
+			// 甘肃
+			{ name: '兰州', lat: 36.06, lng: 103.83, tz: 'Asia/Shanghai' },
+			{ name: '永登', lat: 36.74, lng: 103.26, tz: 'Asia/Shanghai' },
+			{ name: '榆中', lat: 35.84, lng: 104.11, tz: 'Asia/Shanghai' },
+			{ name: '皋兰', lat: 36.33, lng: 103.95, tz: 'Asia/Shanghai' },
+			{ name: '白银', lat: 36.54, lng: 104.14, tz: 'Asia/Shanghai' },
+			{ name: '靖远', lat: 36.56, lng: 104.68, tz: 'Asia/Shanghai' },
+			{ name: '会宁', lat: 35.69, lng: 105.05, tz: 'Asia/Shanghai' },
+			{ name: '景泰', lat: 37.19, lng: 104.06, tz: 'Asia/Shanghai' },
+			{ name: '天水', lat: 34.58, lng: 105.72, tz: 'Asia/Shanghai' },
+			{ name: '秦安', lat: 34.86, lng: 105.67, tz: 'Asia/Shanghai' },
+			{ name: '甘谷', lat: 34.74, lng: 105.33, tz: 'Asia/Shanghai' },
+			{ name: '武山', lat: 34.72, lng: 104.89, tz: 'Asia/Shanghai' },
+			{ name: '清水', lat: 34.75, lng: 106.14, tz: 'Asia/Shanghai' },
+			{ name: '张家川', lat: 34.99, lng: 106.22, tz: 'Asia/Shanghai' },
+			{ name: '嘉峪关', lat: 39.77, lng: 98.29, tz: 'Asia/Shanghai' },
+			{ name: '金昌', lat: 38.52, lng: 102.19, tz: 'Asia/Shanghai' },
+			{ name: '永昌', lat: 38.25, lng: 101.97, tz: 'Asia/Shanghai' },
+			{ name: '武威', lat: 37.93, lng: 102.64, tz: 'Asia/Shanghai' },
+			{ name: '民勤', lat: 38.62, lng: 103.09, tz: 'Asia/Shanghai' },
+			{ name: '古浪', lat: 37.47, lng: 102.89, tz: 'Asia/Shanghai' },
+			{ name: '天祝', lat: 36.97, lng: 103.14, tz: 'Asia/Shanghai' },
+			{ name: '张掖', lat: 38.93, lng: 100.45, tz: 'Asia/Shanghai' },
+			{ name: '民乐', lat: 38.43, lng: 100.82, tz: 'Asia/Shanghai' },
+			{ name: '临泽', lat: 39.15, lng: 100.16, tz: 'Asia/Shanghai' },
+			{ name: '高台', lat: 39.38, lng: 99.82, tz: 'Asia/Shanghai' },
+			{ name: '山丹', lat: 38.78, lng: 100.78, tz: 'Asia/Shanghai' },
+			{ name: '肃南', lat: 38.84, lng: 99.61, tz: 'Asia/Shanghai' },
+			{ name: '酒泉', lat: 39.73, lng: 98.50, tz: 'Asia/Shanghai' },
+			{ name: '玉门', lat: 40.29, lng: 97.04, tz: 'Asia/Shanghai' },
+			{ name: '敦煌', lat: 40.14, lng: 94.66, tz: 'Asia/Shanghai' },
+			{ name: '金塔', lat: 39.98, lng: 98.90, tz: 'Asia/Shanghai' },
+			{ name: '瓜州', lat: 40.52, lng: 95.78, tz: 'Asia/Shanghai' },
+			{ name: '肃北', lat: 39.51, lng: 94.88, tz: 'Asia/Shanghai' },
+			{ name: '阿克塞', lat: 39.63, lng: 94.34, tz: 'Asia/Shanghai' },
+			{ name: '平凉', lat: 35.54, lng: 106.67, tz: 'Asia/Shanghai' },
+			{ name: '泾川', lat: 35.33, lng: 107.37, tz: 'Asia/Shanghai' },
+			{ name: '灵台', lat: 35.07, lng: 107.62, tz: 'Asia/Shanghai' },
+			{ name: '崇信', lat: 35.30, lng: 107.03, tz: 'Asia/Shanghai' },
+			{ name: '华亭', lat: 35.22, lng: 106.65, tz: 'Asia/Shanghai' },
+			{ name: '庄浪', lat: 35.20, lng: 106.04, tz: 'Asia/Shanghai' },
+			{ name: '静宁', lat: 35.52, lng: 105.73, tz: 'Asia/Shanghai' },
+			{ name: '庆阳', lat: 35.71, lng: 107.64, tz: 'Asia/Shanghai' },
+			{ name: '庆城', lat: 37.01, lng: 107.88, tz: 'Asia/Shanghai' },
+			{ name: '环县', lat: 36.57, lng: 107.31, tz: 'Asia/Shanghai' },
+			{ name: '华池', lat: 36.46, lng: 107.99, tz: 'Asia/Shanghai' },
+			{ name: '合水', lat: 35.82, lng: 108.02, tz: 'Asia/Shanghai' },
+			{ name: '正宁', lat: 35.49, lng: 108.36, tz: 'Asia/Shanghai' },
+			{ name: '宁县', lat: 35.50, lng: 107.92, tz: 'Asia/Shanghai' },
+			{ name: '镇原', lat: 35.68, lng: 107.20, tz: 'Asia/Shanghai' },
+			{ name: '定西', lat: 35.58, lng: 104.63, tz: 'Asia/Shanghai' },
+			{ name: '通渭', lat: 35.21, lng: 105.24, tz: 'Asia/Shanghai' },
+			{ name: '陇西', lat: 35.00, lng: 104.63, tz: 'Asia/Shanghai' },
+			{ name: '渭源', lat: 35.14, lng: 104.21, tz: 'Asia/Shanghai' },
+			{ name: '临洮', lat: 35.38, lng: 103.86, tz: 'Asia/Shanghai' },
+			{ name: '漳县', lat: 34.85, lng: 104.47, tz: 'Asia/Shanghai' },
+			{ name: '岷县', lat: 34.43, lng: 104.04, tz: 'Asia/Shanghai' },
+			{ name: '陇南', lat: 33.40, lng: 104.92, tz: 'Asia/Shanghai' },
+			{ name: '成县', lat: 33.74, lng: 105.73, tz: 'Asia/Shanghai' },
+			{ name: '文县', lat: 32.94, lng: 104.68, tz: 'Asia/Shanghai' },
+			{ name: '宕昌', lat: 34.05, lng: 104.35, tz: 'Asia/Shanghai' },
+			{ name: '康县', lat: 33.33, lng: 105.61, tz: 'Asia/Shanghai' },
+			{ name: '西和', lat: 34.01, lng: 105.30, tz: 'Asia/Shanghai' },
+			{ name: '礼县', lat: 34.19, lng: 105.18, tz: 'Asia/Shanghai' },
+			{ name: '徽县', lat: 33.77, lng: 106.09, tz: 'Asia/Shanghai' },
+			{ name: '两当', lat: 33.91, lng: 106.30, tz: 'Asia/Shanghai' },
+			{ name: '临夏', lat: 35.60, lng: 103.21, tz: 'Asia/Shanghai' },
+			{ name: '康乐', lat: 35.37, lng: 103.47, tz: 'Asia/Shanghai' },
+			{ name: '永靖', lat: 35.94, lng: 103.32, tz: 'Asia/Shanghai' },
+			{ name: '广河', lat: 35.48, lng: 103.57, tz: 'Asia/Shanghai' },
+			{ name: '和政', lat: 35.43, lng: 103.35, tz: 'Asia/Shanghai' },
+			{ name: '东乡', lat: 35.66, lng: 103.39, tz: 'Asia/Shanghai' },
+			{ name: '积石山', lat: 35.72, lng: 102.87, tz: 'Asia/Shanghai' },
+			{ name: '合作', lat: 35.00, lng: 102.91, tz: 'Asia/Shanghai' },
+			{ name: '临潭', lat: 34.69, lng: 103.35, tz: 'Asia/Shanghai' },
+			{ name: '卓尼', lat: 34.59, lng: 103.51, tz: 'Asia/Shanghai' },
+			{ name: '舟曲', lat: 33.78, lng: 104.37, tz: 'Asia/Shanghai' },
+			{ name: '迭部', lat: 34.06, lng: 103.22, tz: 'Asia/Shanghai' },
+			{ name: '玛曲', lat: 34.00, lng: 102.08, tz: 'Asia/Shanghai' },
+			{ name: '碌曲', lat: 34.59, lng: 102.49, tz: 'Asia/Shanghai' },
+			{ name: '夏河', lat: 35.20, lng: 102.52, tz: 'Asia/Shanghai' },
+
+			// 青海
+			{ name: '西宁', lat: 36.62, lng: 101.78, tz: 'Asia/Shanghai' },
+			{ name: '大通', lat: 36.93, lng: 101.70, tz: 'Asia/Shanghai' },
+			{ name: '湟中', lat: 36.50, lng: 101.57, tz: 'Asia/Shanghai' },
+			{ name: '湟源', lat: 36.71, lng: 101.26, tz: 'Asia/Shanghai' },
+			{ name: '海东', lat: 36.50, lng: 102.10, tz: 'Asia/Shanghai' },
+			{ name: '平安', lat: 36.50, lng: 102.10, tz: 'Asia/Shanghai' },
+			{ name: '民和', lat: 36.33, lng: 102.81, tz: 'Asia/Shanghai' },
+			{ name: '乐都', lat: 36.48, lng: 102.40, tz: 'Asia/Shanghai' },
+			{ name: '互助', lat: 36.84, lng: 101.96, tz: 'Asia/Shanghai' },
+			{ name: '化隆', lat: 36.09, lng: 102.27, tz: 'Asia/Shanghai' },
+			{ name: '循化', lat: 35.85, lng: 102.49, tz: 'Asia/Shanghai' },
+			{ name: '海北', lat: 36.96, lng: 100.90, tz: 'Asia/Shanghai' },
+			{ name: '海晏', lat: 36.90, lng: 100.99, tz: 'Asia/Shanghai' },
+			{ name: '祁连', lat: 38.19, lng: 100.25, tz: 'Asia/Shanghai' },
+			{ name: '刚察', lat: 37.33, lng: 100.15, tz: 'Asia/Shanghai' },
+			{ name: '门源', lat: 37.38, lng: 101.62, tz: 'Asia/Shanghai' },
+			{ name: '海南州', lat: 36.28, lng: 100.62, tz: 'Asia/Shanghai' },
+			{ name: '共和', lat: 36.28, lng: 100.62, tz: 'Asia/Shanghai' },
+			{ name: '同德', lat: 35.25, lng: 100.58, tz: 'Asia/Shanghai' },
+			{ name: '贵德', lat: 36.04, lng: 101.43, tz: 'Asia/Shanghai' },
+			{ name: '兴海', lat: 35.59, lng: 99.99, tz: 'Asia/Shanghai' },
+			{ name: '贵南', lat: 35.59, lng: 100.75, tz: 'Asia/Shanghai' },
+			{ name: '黄南', lat: 35.52, lng: 102.01, tz: 'Asia/Shanghai' },
+			{ name: '同仁', lat: 35.52, lng: 102.01, tz: 'Asia/Shanghai' },
+			{ name: '尖扎', lat: 35.94, lng: 102.03, tz: 'Asia/Shanghai' },
+			{ name: '泽库', lat: 35.04, lng: 101.46, tz: 'Asia/Shanghai' },
+			{ name: '河南县', lat: 34.73, lng: 101.61, tz: 'Asia/Shanghai' },
+			{ name: '果洛', lat: 34.47, lng: 100.24, tz: 'Asia/Shanghai' },
+			{ name: '玛沁', lat: 34.47, lng: 100.24, tz: 'Asia/Shanghai' },
+			{ name: '班玛', lat: 32.93, lng: 100.74, tz: 'Asia/Shanghai' },
+			{ name: '甘德', lat: 33.97, lng: 99.90, tz: 'Asia/Shanghai' },
+			{ name: '达日', lat: 33.75, lng: 99.65, tz: 'Asia/Shanghai' },
+			{ name: '久治', lat: 33.43, lng: 101.48, tz: 'Asia/Shanghai' },
+			{ name: '玛多', lat: 34.92, lng: 98.21, tz: 'Asia/Shanghai' },
+			{ name: '玉树', lat: 33.00, lng: 97.01, tz: 'Asia/Shanghai' },
+			{ name: '杂多', lat: 32.89, lng: 95.30, tz: 'Asia/Shanghai' },
+			{ name: '称多', lat: 33.37, lng: 97.13, tz: 'Asia/Shanghai' },
+			{ name: '治多', lat: 33.85, lng: 95.62, tz: 'Asia/Shanghai' },
+			{ name: '囊谦', lat: 32.20, lng: 96.48, tz: 'Asia/Shanghai' },
+			{ name: '曲麻莱', lat: 34.14, lng: 95.79, tz: 'Asia/Shanghai' },
+			{ name: '海西', lat: 37.37, lng: 97.37, tz: 'Asia/Shanghai' },
+			{ name: '德令哈', lat: 37.37, lng: 97.37, tz: 'Asia/Shanghai' },
+			{ name: '格尔木', lat: 36.40, lng: 94.90, tz: 'Asia/Shanghai' },
+			{ name: '乌兰', lat: 36.93, lng: 98.48, tz: 'Asia/Shanghai' },
+			{ name: '都兰', lat: 36.30, lng: 98.09, tz: 'Asia/Shanghai' },
+			{ name: '天峻', lat: 37.30, lng: 99.02, tz: 'Asia/Shanghai' },
+
+			// 内蒙古
+			{ name: '呼和浩特', lat: 40.82, lng: 111.65, tz: 'Asia/Shanghai' },
+			{ name: '土默特左旗', lat: 40.72, lng: 111.13, tz: 'Asia/Shanghai' },
+			{ name: '托克托', lat: 40.28, lng: 111.15, tz: 'Asia/Shanghai' },
+			{ name: '和林格尔', lat: 40.40, lng: 111.80, tz: 'Asia/Shanghai' },
+			{ name: '清水河', lat: 39.92, lng: 111.65, tz: 'Asia/Shanghai' },
+			{ name: '武川', lat: 41.12, lng: 111.42, tz: 'Asia/Shanghai' },
+			{ name: '包头', lat: 40.58, lng: 110.00, tz: 'Asia/Shanghai' },
+			{ name: '土默特右旗', lat: 40.55, lng: 110.52, tz: 'Asia/Shanghai' },
+			{ name: '固阳', lat: 41.03, lng: 110.03, tz: 'Asia/Shanghai' },
+			{ name: '达拉特旗', lat: 40.42, lng: 110.02, tz: 'Asia/Shanghai' },
+			{ name: '乌海', lat: 39.67, lng: 106.82, tz: 'Asia/Shanghai' },
+			{ name: '赤峰', lat: 42.28, lng: 118.87, tz: 'Asia/Shanghai' },
+			{ name: '宁城', lat: 41.62, lng: 119.32, tz: 'Asia/Shanghai' },
+			{ name: '林西', lat: 43.62, lng: 118.02, tz: 'Asia/Shanghai' },
+			{ name: '喀喇沁旗', lat: 41.95, lng: 118.67, tz: 'Asia/Shanghai' },
+			{ name: '敖汉旗', lat: 42.30, lng: 119.87, tz: 'Asia/Shanghai' },
+			{ name: '翁牛特旗', lat: 42.97, lng: 119.00, tz: 'Asia/Shanghai' },
+			{ name: '巴林右旗', lat: 43.52, lng: 118.65, tz: 'Asia/Shanghai' },
+			{ name: '巴林左旗', lat: 43.98, lng: 119.35, tz: 'Asia/Shanghai' },
+			{ name: '阿鲁科尔沁旗', lat: 43.97, lng: 120.05, tz: 'Asia/Shanghai' },
+			{ name: '克什克腾旗', lat: 43.28, lng: 117.48, tz: 'Asia/Shanghai' },
+			{ name: '通辽', lat: 43.62, lng: 122.27, tz: 'Asia/Shanghai' },
+			{ name: '库伦旗', lat: 42.72, lng: 121.75, tz: 'Asia/Shanghai' },
+			{ name: '奈曼旗', lat: 42.85, lng: 120.65, tz: 'Asia/Shanghai' },
+			{ name: '扎鲁特旗', lat: 44.55, lng: 120.87, tz: 'Asia/Shanghai' },
+			{ name: '开鲁', lat: 43.60, lng: 121.31, tz: 'Asia/Shanghai' },
+			{ name: '科尔沁左翼中旗', lat: 44.13, lng: 123.32, tz: 'Asia/Shanghai' },
+			{ name: '科尔沁左翼后旗', lat: 42.95, lng: 122.36, tz: 'Asia/Shanghai' },
+			{ name: '霍林郭勒', lat: 45.53, lng: 119.65, tz: 'Asia/Shanghai' },
+			{ name: '鄂尔多斯', lat: 39.61, lng: 109.78, tz: 'Asia/Shanghai' },
+			{ name: '准格尔旗', lat: 39.68, lng: 111.13, tz: 'Asia/Shanghai' },
+			{ name: '乌审旗', lat: 38.38, lng: 109.03, tz: 'Asia/Shanghai' },
+			{ name: '伊金霍洛旗', lat: 39.25, lng: 109.77, tz: 'Asia/Shanghai' },
+			{ name: '鄂托克旗', lat: 39.12, lng: 107.97, tz: 'Asia/Shanghai' },
+			{ name: '鄂托克前旗', lat: 38.18, lng: 107.43, tz: 'Asia/Shanghai' },
+			{ name: '杭锦旗', lat: 39.83, lng: 108.70, tz: 'Asia/Shanghai' },
+			{ name: '巴彦淖尔', lat: 40.75, lng: 107.39, tz: 'Asia/Shanghai' },
+			{ name: '临河', lat: 40.78, lng: 107.37, tz: 'Asia/Shanghai' },
+			{ name: '五原', lat: 41.12, lng: 108.28, tz: 'Asia/Shanghai' },
+			{ name: '磴口', lat: 40.33, lng: 106.98, tz: 'Asia/Shanghai' },
+			{ name: '杭锦后旗', lat: 40.88, lng: 107.12, tz: 'Asia/Shanghai' },
+			{ name: '乌拉特中旗', lat: 41.55, lng: 108.52, tz: 'Asia/Shanghai' },
+			{ name: '乌拉特前旗', lat: 40.75, lng: 108.65, tz: 'Asia/Shanghai' },
+			{ name: '乌拉特后旗', lat: 40.88, lng: 108.52, tz: 'Asia/Shanghai' },
+			{ name: '乌兰察布', lat: 41.03, lng: 113.11, tz: 'Asia/Shanghai' },
+			{ name: '集宁', lat: 41.03, lng: 113.08, tz: 'Asia/Shanghai' },
+			{ name: '兴和', lat: 40.88, lng: 113.97, tz: 'Asia/Shanghai' },
+			{ name: '卓资', lat: 40.93, lng: 112.52, tz: 'Asia/Shanghai' },
+			{ name: '商都', lat: 41.58, lng: 113.53, tz: 'Asia/Shanghai' },
+			{ name: '丰镇', lat: 40.45, lng: 113.15, tz: 'Asia/Shanghai' },
+			{ name: '凉城', lat: 40.52, lng: 112.48, tz: 'Asia/Shanghai' },
+			{ name: '化德', lat: 41.90, lng: 114.00, tz: 'Asia/Shanghai' },
+			{ name: '锡林郭勒', lat: 43.93, lng: 116.05, tz: 'Asia/Shanghai' },
+			{ name: '二连浩特', lat: 43.65, lng: 111.96, tz: 'Asia/Shanghai' },
+			{ name: '阿巴哈纳尔旗', lat: 43.95, lng: 116.08, tz: 'Asia/Shanghai' },
+			{ name: '多伦', lat: 42.18, lng: 116.48, tz: 'Asia/Shanghai' },
+			{ name: '阿巴嘎旗', lat: 44.03, lng: 114.97, tz: 'Asia/Shanghai' },
+			{ name: '西乌珠穆沁旗', lat: 44.60, lng: 117.58, tz: 'Asia/Shanghai' },
+			{ name: '东乌珠穆沁旗', lat: 45.53, lng: 116.97, tz: 'Asia/Shanghai' },
+			{ name: '苏尼特左旗', lat: 43.85, lng: 113.70, tz: 'Asia/Shanghai' },
+			{ name: '苏尼特右旗', lat: 42.47, lng: 112.95, tz: 'Asia/Shanghai' },
+			{ name: '太仆寺旗', lat: 41.90, lng: 115.30, tz: 'Asia/Shanghai' },
+			{ name: '正镶白旗', lat: 42.32, lng: 115.00, tz: 'Asia/Shanghai' },
+			{ name: '正蓝旗', lat: 42.25, lng: 116.02, tz: 'Asia/Shanghai' },
+			{ name: '镶黄旗', lat: 42.25, lng: 113.83, tz: 'Asia/Shanghai' },
+			{ name: '呼伦贝尔', lat: 49.22, lng: 119.76, tz: 'Asia/Shanghai' },
+			{ name: '海拉尔', lat: 49.22, lng: 119.76, tz: 'Asia/Shanghai' },
+			{ name: '满洲里', lat: 49.58, lng: 117.47, tz: 'Asia/Shanghai' },
+			{ name: '陈巴尔虎旗', lat: 49.33, lng: 119.45, tz: 'Asia/Shanghai' },
+			{ name: '额尔古纳右旗', lat: 50.45, lng: 120.08, tz: 'Asia/Shanghai' },
+			{ name: '额尔古纳左旗', lat: 50.80, lng: 121.52, tz: 'Asia/Shanghai' },
+			{ name: '阿荣旗', lat: 48.13, lng: 123.50, tz: 'Asia/Shanghai' },
+			{ name: '新巴尔虎左旗', lat: 48.67, lng: 116.82, tz: 'Asia/Shanghai' },
+			{ name: '新巴尔虎右旗', lat: 48.22, lng: 118.23, tz: 'Asia/Shanghai' },
+			{ name: '兴安盟', lat: 46.07, lng: 122.08, tz: 'Asia/Shanghai' },
+			{ name: '乌兰浩特', lat: 46.07, lng: 122.08, tz: 'Asia/Shanghai' },
+			{ name: '突泉', lat: 45.40, lng: 121.50, tz: 'Asia/Shanghai' },
+			{ name: '阿拉善盟', lat: 38.85, lng: 105.68, tz: 'Asia/Shanghai' },
+			{ name: '阿拉善左旗', lat: 38.85, lng: 105.68, tz: 'Asia/Shanghai' },
+			{ name: '阿拉善右旗', lat: 39.20, lng: 101.68, tz: 'Asia/Shanghai' },
+			{ name: '额济纳旗', lat: 41.90, lng: 100.88, tz: 'Asia/Shanghai' },
+
+			// 云南
+			{ name: '昆明', lat: 25.04, lng: 102.73, tz: 'Asia/Shanghai' },
+			{ name: '呈贡', lat: 24.90, lng: 102.79, tz: 'Asia/Shanghai' },
+			{ name: '晋宁', lat: 24.68, lng: 102.58, tz: 'Asia/Shanghai' },
+			{ name: '富民', lat: 25.21, lng: 102.48, tz: 'Asia/Shanghai' },
+			{ name: '安宁', lat: 24.95, lng: 102.44, tz: 'Asia/Shanghai' },
+			{ name: '宜良', lat: 24.90, lng: 103.12, tz: 'Asia/Shanghai' },
+			{ name: '寻甸', lat: 25.56, lng: 103.25, tz: 'Asia/Shanghai' },
+			{ name: '禄劝', lat: 25.58, lng: 102.45, tz: 'Asia/Shanghai' },
+			{ name: '昭通', lat: 27.34, lng: 103.72, tz: 'Asia/Shanghai' },
+			{ name: '永善', lat: 28.22, lng: 103.63, tz: 'Asia/Shanghai' },
+			{ name: '大关', lat: 27.74, lng: 103.91, tz: 'Asia/Shanghai' },
+			{ name: '彝良', lat: 27.61, lng: 104.06, tz: 'Asia/Shanghai' },
+			{ name: '鲁甸', lat: 27.21, lng: 103.54, tz: 'Asia/Shanghai' },
+			{ name: '绥江', lat: 28.58, lng: 103.97, tz: 'Asia/Shanghai' },
+			{ name: '盐津', lat: 28.08, lng: 104.28, tz: 'Asia/Shanghai' },
+			{ name: '威信', lat: 27.85, lng: 105.05, tz: 'Asia/Shanghai' },
+			{ name: '镇雄', lat: 27.42, lng: 104.86, tz: 'Asia/Shanghai' },
+			{ name: '巧家', lat: 26.90, lng: 102.92, tz: 'Asia/Shanghai' },
+			{ name: '曲靖', lat: 25.51, lng: 103.79, tz: 'Asia/Shanghai' },
+			{ name: '宣威', lat: 26.24, lng: 104.09, tz: 'Asia/Shanghai' },
+			{ name: '会泽', lat: 26.41, lng: 103.27, tz: 'Asia/Shanghai' },
+			{ name: '罗平', lat: 24.88, lng: 104.30, tz: 'Asia/Shanghai' },
+			{ name: '陆良', lat: 25.04, lng: 104.64, tz: 'Asia/Shanghai' },
+			{ name: '马龙', lat: 25.41, lng: 103.61, tz: 'Asia/Shanghai' },
+			{ name: '玉溪', lat: 24.35, lng: 102.52, tz: 'Asia/Shanghai' },
+			{ name: '华宁', lat: 24.26, lng: 102.93, tz: 'Asia/Shanghai' },
+			{ name: '通海', lat: 24.09, lng: 102.75, tz: 'Asia/Shanghai' },
+			{ name: '澄江', lat: 24.68, lng: 102.91, tz: 'Asia/Shanghai' },
+			{ name: '江川', lat: 24.27, lng: 102.73, tz: 'Asia/Shanghai' },
+			{ name: '元江', lat: 23.59, lng: 102.00, tz: 'Asia/Shanghai' },
+			{ name: '新平', lat: 24.06, lng: 101.98, tz: 'Asia/Shanghai' },
+			{ name: '峨山', lat: 24.16, lng: 102.38, tz: 'Asia/Shanghai' },
+			{ name: '普洱', lat: 23.07, lng: 101.03, tz: 'Asia/Shanghai' },
+			{ name: '思茅', lat: 22.79, lng: 101.00, tz: 'Asia/Shanghai' },
+			{ name: '镇沅', lat: 23.90, lng: 100.88, tz: 'Asia/Shanghai' },
+			{ name: '景东', lat: 24.42, lng: 100.82, tz: 'Asia/Shanghai' },
+			{ name: '江城', lat: 22.58, lng: 101.88, tz: 'Asia/Shanghai' },
+			{ name: '孟连', lat: 22.32, lng: 99.55, tz: 'Asia/Shanghai' },
+			{ name: '临沧', lat: 23.88, lng: 100.09, tz: 'Asia/Shanghai' },
+			{ name: '云县', lat: 24.44, lng: 100.12, tz: 'Asia/Shanghai' },
+			{ name: '镇康', lat: 23.92, lng: 99.02, tz: 'Asia/Shanghai' },
+			{ name: '双江', lat: 23.45, lng: 99.85, tz: 'Asia/Shanghai' },
+			{ name: '沧源', lat: 23.15, lng: 99.24, tz: 'Asia/Shanghai' },
+			{ name: '耿马', lat: 23.56, lng: 99.41, tz: 'Asia/Shanghai' },
+			{ name: '保山', lat: 25.12, lng: 99.18, tz: 'Asia/Shanghai' },
+			{ name: '施甸', lat: 24.69, lng: 99.15, tz: 'Asia/Shanghai' },
+			{ name: '腾冲', lat: 25.01, lng: 98.51, tz: 'Asia/Shanghai' },
+			{ name: '昌宁', lat: 24.82, lng: 99.61, tz: 'Asia/Shanghai' },
+			{ name: '龙陵', lat: 24.58, lng: 98.70, tz: 'Asia/Shanghai' },
+			{ name: '丽江', lat: 26.86, lng: 100.25, tz: 'Asia/Shanghai' },
+			{ name: '华坪', lat: 26.63, lng: 101.24, tz: 'Asia/Shanghai' },
+			{ name: '永胜', lat: 26.71, lng: 100.76, tz: 'Asia/Shanghai' },
+			{ name: '宁蒗', lat: 27.29, lng: 100.82, tz: 'Asia/Shanghai' },
+			{ name: '文山', lat: 23.37, lng: 104.24, tz: 'Asia/Shanghai' },
+			{ name: '广南', lat: 24.05, lng: 105.09, tz: 'Asia/Shanghai' },
+			{ name: '西畴', lat: 23.42, lng: 104.68, tz: 'Asia/Shanghai' },
+			{ name: '麻栗坡', lat: 23.12, lng: 104.71, tz: 'Asia/Shanghai' },
+			{ name: '丘北', lat: 24.03, lng: 104.19, tz: 'Asia/Shanghai' },
+			{ name: '砚山', lat: 23.62, lng: 104.35, tz: 'Asia/Shanghai' },
+			{ name: '富宁', lat: 23.62, lng: 105.60, tz: 'Asia/Shanghai' },
+			{ name: '红河', lat: 23.35, lng: 102.42, tz: 'Asia/Shanghai' },
+			{ name: '个旧', lat: 23.35, lng: 102.43, tz: 'Asia/Shanghai' },
+			{ name: '弥勒', lat: 24.41, lng: 103.43, tz: 'Asia/Shanghai' },
+			{ name: '蒙自', lat: 23.36, lng: 103.41, tz: 'Asia/Shanghai' },
+			{ name: '元阳', lat: 23.17, lng: 102.81, tz: 'Asia/Shanghai' },
+			{ name: '石屏', lat: 23.73, lng: 102.48, tz: 'Asia/Shanghai' },
+			{ name: '建水', lat: 23.64, lng: 102.79, tz: 'Asia/Shanghai' },
+			{ name: '河口', lat: 22.52, lng: 103.98, tz: 'Asia/Shanghai' },
+			{ name: '屏边', lat: 22.68, lng: 103.67, tz: 'Asia/Shanghai' },
+			{ name: '西双版纳', lat: 22.00, lng: 100.79, tz: 'Asia/Shanghai' },
+			{ name: '景洪', lat: 22.00, lng: 100.79, tz: 'Asia/Shanghai' },
+			{ name: '勐海', lat: 21.95, lng: 100.50, tz: 'Asia/Shanghai' },
+			{ name: '勐腊', lat: 21.48, lng: 101.56, tz: 'Asia/Shanghai' },
+			{ name: '楚雄', lat: 25.01, lng: 101.54, tz: 'Asia/Shanghai' },
+			{ name: '武定', lat: 25.55, lng: 102.36, tz: 'Asia/Shanghai' },
+			{ name: '禄丰', lat: 25.15, lng: 102.08, tz: 'Asia/Shanghai' },
+			{ name: '南华', lat: 25.21, lng: 101.26, tz: 'Asia/Shanghai' },
+			{ name: '大姚', lat: 25.73, lng: 101.34, tz: 'Asia/Shanghai' },
+			{ name: '永仁', lat: 26.07, lng: 101.70, tz: 'Asia/Shanghai' },
+			{ name: '大理', lat: 25.60, lng: 100.26, tz: 'Asia/Shanghai' },
+			{ name: '宾川', lat: 25.82, lng: 100.55, tz: 'Asia/Shanghai' },
+			{ name: '弥渡', lat: 25.34, lng: 100.52, tz: 'Asia/Shanghai' },
+			{ name: '永平', lat: 25.45, lng: 99.52, tz: 'Asia/Shanghai' },
+			{ name: '鹤庆', lat: 26.55, lng: 100.18, tz: 'Asia/Shanghai' },
+			{ name: '香格里拉', lat: 27.82, lng: 99.70, tz: 'Asia/Shanghai' },
+			{ name: '德钦', lat: 28.48, lng: 98.91, tz: 'Asia/Shanghai' },
+			{ name: '泸水', lat: 25.85, lng: 98.85, tz: 'Asia/Shanghai' },
+			{ name: '瑞丽', lat: 24.01, lng: 97.85, tz: 'Asia/Shanghai' },
+			{ name: '芒市', lat: 24.43, lng: 98.58, tz: 'Asia/Shanghai' },
+
+			// 海南
+			{ name: '海口', lat: 20.02, lng: 110.33, tz: 'Asia/Shanghai' },
+			{ name: '三亚', lat: 18.25, lng: 109.51, tz: 'Asia/Shanghai' },
+			{ name: '三沙', lat: 16.83, lng: 112.34, tz: 'Asia/Shanghai' },
+			{ name: '儋州', lat: 19.52, lng: 109.58, tz: 'Asia/Shanghai' },
+			{ name: '文昌', lat: 19.54, lng: 110.80, tz: 'Asia/Shanghai' },
+			{ name: '琼海', lat: 19.26, lng: 110.47, tz: 'Asia/Shanghai' },
+			{ name: '万宁', lat: 18.80, lng: 110.39, tz: 'Asia/Shanghai' },
+			{ name: '东方', lat: 19.10, lng: 108.65, tz: 'Asia/Shanghai' },
+			{ name: '定安', lat: 19.68, lng: 110.35, tz: 'Asia/Shanghai' },
+			{ name: '屯昌', lat: 19.36, lng: 110.03, tz: 'Asia/Shanghai' },
+			{ name: '澄迈', lat: 19.74, lng: 110.01, tz: 'Asia/Shanghai' },
+			{ name: '临高', lat: 19.91, lng: 109.69, tz: 'Asia/Shanghai' },
+			{ name: '白沙', lat: 19.22, lng: 109.36, tz: 'Asia/Shanghai' },
+			{ name: '昌江', lat: 19.30, lng: 109.05, tz: 'Asia/Shanghai' },
+			{ name: '乐东', lat: 18.75, lng: 109.17, tz: 'Asia/Shanghai' },
+			{ name: '陵水', lat: 18.51, lng: 110.04, tz: 'Asia/Shanghai' },
+			{ name: '保亭', lat: 18.60, lng: 109.66, tz: 'Asia/Shanghai' },
+			{ name: '琼中', lat: 19.03, lng: 109.84, tz: 'Asia/Shanghai' }
+		];
+
+		// ==================== 模糊搜索下拉选择框逻辑（电脑下拉 + 手机大浮层） ====================
+		function isMobileScreen() {
+			return window.innerWidth <= 640;
+		}
+
+		function renderCityDropdown(prefix, keyword) {
+			const listWrap = document.getElementById(`${prefix}-city-list`);
+			const currentText = document.getElementById(`${prefix}-city`).value.trim();
+			const q = (keyword !== undefined ? keyword : '').trim();
+
+			const list = q
+				? CITY_DATA.filter((item) => item.name.includes(q))
+				: CITY_DATA;
+
+			listWrap.innerHTML = '';
+			if (list.length === 0) {
+				const empty = document.createElement('div');
+				empty.className = 'city-empty';
+				empty.textContent = '无匹配城市';
+				listWrap.appendChild(empty);
+				return;
+			}
+
+			list.forEach((city) => {
+				const div = document.createElement('div');
+				div.className = 'city-option' + (city.name === currentText ? ' active' : '');
+				div.textContent = city.name;
+				div.addEventListener('click', (e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					selectCityItem(prefix, city);
+				});
+				listWrap.appendChild(div);
+			});
+		}
+
+		function openCityDropdown(prefix) {
+			closeAllCityDropdowns(prefix);
+			const mainInput = document.getElementById(`${prefix}-city`);
+			const modalSearch = document.getElementById(`${prefix}-city-modal-search`);
+			const inputVal = mainInput.value.trim();
+			const isExactCity = CITY_DATA.some((c) => c.name === inputVal);
+			const initialKeyword = isExactCity ? '' : inputVal;
+
+			if (modalSearch) {
+				modalSearch.value = initialKeyword;
+			}
+
+			renderCityDropdown(prefix, initialKeyword);
+			document.getElementById(`${prefix}-city-dropdown`).classList.add('open');
+
+			if (isMobileScreen()) {
+				document.getElementById('city-backdrop').classList.add('open');
+				// 手机端避免外层框抢焦点，交由弹窗内部处理
+				mainInput.blur();
+			}
+		}
+
+		function closeAllCityDropdowns(exceptPrefix = '') {
+			let anyOpen = false;
+			['pt', 'sh'].forEach((p) => {
+				const dd = document.getElementById(`${p}-city-dropdown`);
+				if (!dd) return;
+				if (p !== exceptPrefix) {
+					dd.classList.remove('open');
+				} else if (dd.classList.contains('open')) {
+					anyOpen = true;
+				}
+			});
+			if (!anyOpen) {
+				document.getElementById('city-backdrop').classList.remove('open');
+			}
+		}
+
+		function onCitySearchInput(prefix) {
+			const val = document.getElementById(`${prefix}-city`).value;
+			const modalSearch = document.getElementById(`${prefix}-city-modal-search`);
+			if (modalSearch) modalSearch.value = val;
+
+			renderCityDropdown(prefix, val);
+			document.getElementById(`${prefix}-city-dropdown`).classList.add('open');
+			if (isMobileScreen()) {
+				document.getElementById('city-backdrop').classList.add('open');
+			}
+
+			const exact = CITY_DATA.find((c) => c.name === val.trim());
+			if (exact) {
+				applyCityCoords(prefix, exact);
+			} else {
+				saveUserPrefs();
+			}
+		}
+
+		function onModalSearchInput(prefix) {
+			const modalSearch = document.getElementById(`${prefix}-city-modal-search`);
+			const val = modalSearch ? modalSearch.value : '';
+			document.getElementById(`${prefix}-city`).value = val;
+			renderCityDropdown(prefix, val);
+		}
+
+		function selectCityItem(prefix, city) {
+			document.getElementById(`${prefix}-city`).value = city.name;
+			const modalSearch = document.getElementById(`${prefix}-city-modal-search`);
+			if (modalSearch) modalSearch.value = '';
+			closeAllCityDropdowns();
+			applyCityCoords(prefix, city);
+		}
+
+		function applyCityCoords(prefix, city) {
+			const latInput = document.getElementById(`${prefix}-latitude`);
+			const lngInput = document.getElementById(`${prefix}-longitude`);
+			const tzSelect = document.getElementById(`${prefix}-timezone`);
+
+			latInput.value = city.lat;
+			lngInput.value = city.lng;
+			if (city.tz) tzSelect.value = city.tz;
+
+			if (prefix === 'pt') {
+				ptUpdate();
+			} else {
+				shRenderAll();
+			}
+		}
+
+		function onCoordManualChange(prefix) {
+			const cityInput = document.getElementById(`${prefix}-city`);
+			const latInput = document.getElementById(`${prefix}-latitude`);
+			const lngInput = document.getElementById(`${prefix}-longitude`);
+			const matched = CITY_DATA.find((c) => c.name === cityInput.value.trim());
+			if (matched) {
+				const curLat = parseFloat(latInput.value);
+				const curLng = parseFloat(lngInput.value);
+				if (curLat !== matched.lat || curLng !== matched.lng) {
+					cityInput.value = '';
+				}
+			}
+		}
+
+		// ==================== 内置 PrayTime 类 (v3.2) ====================
+		class PrayTime {
+			constructor(method) {
+				this.methods = {
+					MWL: { fajr: 18, isha: 17 },
+					ISNA: { fajr: 15, isha: 15 },
+					Egypt: { fajr: 19.5, isha: 17.5 },
+					Makkah: { fajr: 18.5, isha: '90 min' },
+					Karachi: { fajr: 18, isha: 18 },
+					Tehran: { fajr: 17.7, maghrib: 4.5, midnight: 'Jafari' },
+					Jafari: { fajr: 16, maghrib: 4, midnight: 'Jafari' },
+					France: { fajr: 12, isha: 12 },
+					Russia: { fajr: 16, isha: 15 },
+					Singapore: { fajr: 20, isha: 18 },
+					defaults: { isha: 14, maghrib: '1 min', midnight: 'Standard' }
+				};
+
+				this.settings = {
+					dhuhr: '0 min',
+					asr: 'Standard',
+					highLats: 'NightMiddle',
+					tune: {},
+					format: '24h',
+					rounding: 'nearest',
+					utcOffset: 'auto',
+					timezone: 'Asia/Shanghai',
+					location: [0, 0],
+					iterations: 1
+				};
+
+				this.method(method || 'MWL');
+			}
+
+			method(method) {
+				return this.set(this.methods.defaults).set(this.methods[method]);
+			}
+
+			adjust(params) {
+				return this.set(params);
+			}
+
+			location(location) {
+				return this.set({ location });
+			}
+
+			timezone(timezone) {
+				return this.set({ timezone });
+			}
+
+			format(format) {
+				return this.set({ format });
+			}
+
+			set(settings) {
+				Object.assign(this.settings, settings);
+				return this;
+			}
+
+			times(date = 0) {
+				if (typeof date === 'number')
+					date = new Date((date < 1000) ? Date.now() + date * 864e5 : date);
+				if (date.constructor === Date)
+					date = [date.getFullYear(), date.getMonth() + 1, date.getDate()];
+				this.utcTime = Date.UTC(date[0], date[1] - 1, date[2]);
+
+				let times = this.computeTimes();
+				this.formatTimes(times);
+				return times;
+			}
+
+			getTimes(date) {
+				return this.times(date);
+			}
+
+			computeTimes() {
+				let times = {
+					fajr: 5,
+					sunrise: 6,
+					dhuhr: 12,
+					asr: 13,
+					sunset: 18,
+					maghrib: 18,
+					isha: 18,
+					midnight: 24
+				};
+
+				for (let i = 0; i < this.settings.iterations; i++)
+					times = this.processTimes(times);
+
+				this.adjustHighLats(times);
+				this.updateTimes(times);
+				this.tuneTimes(times);
+				this.convertTimes(times);
+				return times;
+			}
+
+			processTimes(times) {
+				const params = this.settings;
+				const horizon = 0.833;
+
+				return {
+					fajr: this.angleTime(params.fajr, times.fajr, -1),
+					sunrise: this.angleTime(horizon, times.sunrise, -1),
+					dhuhr: this.midDay(times.dhuhr),
+					asr: this.angleTime(this.asrAngle(params.asr, times.asr), times.asr),
+					sunset: this.angleTime(horizon, times.sunset),
+					maghrib: this.angleTime(params.maghrib, times.maghrib),
+					isha: this.angleTime(params.isha, times.isha),
+					midnight: this.midDay(times.midnight) + 12
+				};
+			}
+
+			updateTimes(times) {
+				const params = this.settings;
+
+				if (this.isMin(params.maghrib))
+					times.maghrib = times.sunset + this.value(params.maghrib) / 60;
+				if (this.isMin(params.isha))
+					times.isha = times.maghrib + this.value(params.isha) / 60;
+				if (params.midnight == 'Jafari') {
+					const nextFajr = this.angleTime(params.fajr, 29, -1) + 24;
+					times.midnight = (times.sunset + (this.adjusted ? times.fajr + 24 : nextFajr)) / 2;
+				}
+				times.dhuhr += this.value(params.dhuhr) / 60;
+			}
+
+			tuneTimes(times) {
+				const mins = this.settings.tune;
+				for (let i in times)
+					if (i in mins)
+						times[i] += mins[i] / 60;
+			}
+
+			convertTimes(times) {
+				const lng = this.settings.location[1];
+				for (let i in times) {
+					const time = times[i] - lng / 15;
+					const timestamp = this.utcTime + Math.floor(time * 36e5);
+					times[i] = this.roundTime(timestamp);
+				}
+			}
+
+			roundTime(timestamp) {
+				const rounding = {
+					up: 'ceil',
+					down: 'floor',
+					nearest: 'round'
+				}[this.settings.rounding];
+				if (!rounding)
+					return timestamp;
+				const OneMinute = 6e4;
+				return Math[rounding](timestamp / OneMinute) * OneMinute;
+			}
+
+			sunPosition(time) {
+				const lng = this.settings.location[1];
+				const D = this.utcTime / 864e5 - 10957.5 + this.value(time) / 24 - lng / 360;
+
+				const g = this.mod(357.529 + 0.98560028 * D, 360);
+				const q = this.mod(280.459 + 0.98564736 * D, 360);
+				const L = this.mod(q + 1.915 * this.sin(g) + 0.020 * this.sin(2 * g), 360);
+				const e = 23.439 - 0.00000036 * D;
+				const RA = this.mod(this.arctan2(this.cos(e) * this.sin(L), this.cos(L)) / 15, 24);
+
+				return {
+					declination: this.arcsin(this.sin(e) * this.sin(L)),
+					equation: q / 15 - RA,
+				};
+			}
+
+			midDay(time) {
+				const eqt = this.sunPosition(time).equation;
+				return this.mod(12 - eqt, 24);
+			}
+
+			angleTime(angle, time, direction = 1) {
+				const lat = this.settings.location[0];
+				const decl = this.sunPosition(time).declination;
+				const numerator = -this.sin(angle) - this.sin(lat) * this.sin(decl);
+				const diff = this.arccos(numerator / (this.cos(lat) * this.cos(decl))) / 15;
+				return this.midDay(time) + diff * direction;
+			}
+
+			asrAngle(asrParam, time) {
+				const shadowFactor = { Standard: 1, Hanafi: 2 }[asrParam] || this.value(asrParam);
+				const lat = this.settings.location[0];
+				const decl = this.sunPosition(time).declination;
+				return -this.arccot(shadowFactor + this.tan(Math.abs(lat - decl)));
+			}
+
+			adjustHighLats(times) {
+				const params = this.settings;
+				if (params.highLats == 'None')
+					return;
+
+				this.adjusted = false;
+				const night = 24 + times.sunrise - times.sunset;
+
+				Object.assign(times, {
+					fajr: this.adjustTime(times.fajr, times.sunrise, params.fajr, night, -1),
+					isha: this.adjustTime(times.isha, times.sunset, params.isha, night),
+					maghrib: this.adjustTime(times.maghrib, times.sunset, params.maghrib, night)
+				});
+			}
+
+			adjustTime(time, base, angle, night, direction = 1) {
+				const factors = {
+					NightMiddle: 1 / 2,
+					OneSeventh: 1 / 7,
+					AngleBased: 1 / 60 * this.value(angle)
+				};
+				const portion = factors[this.settings.highLats] * night;
+				const timeDiff = (time - base) * direction;
+				if (isNaN(time) || timeDiff > portion) {
+					time = base + portion * direction;
+					this.adjusted = true;
+				}
+				return time;
+			}
+
+			formatTimes(times) {
+				for (let i in times)
+					times[i] = this.formatTime(times[i]);
+			}
+
+			formatTime(timestamp) {
+				const format = this.settings.format;
+				if (isNaN(timestamp)) return '-----';
+				return this.timeToString(timestamp, format);
+			}
+
+			timeToString(timestamp, format) {
+				const offsetHours = getTimezoneOffsetHours(this.settings.timezone);
+				const d = new Date(timestamp + offsetHours * 3600000);
+				const hh = d.getUTCHours();
+				const mm = String(d.getUTCMinutes()).padStart(2, '0');
+
+				if (format === '24h') {
+					return `${String(hh).padStart(2, '0')}:${mm}`;
+				}
+
+				const h12 = hh % 12 || 12;
+				const prefix = hh >= 12 ? '下午 ' : '上午 ';
+				return format === '12H' ? `${h12}:${mm}` : `${prefix}${h12}:${mm}`;
+			}
+
+			value(str) {
+				return +String(str).split(/[^0-9.+-]/)[0];
+			}
+
+			isMin(str) {
+				return String(str).indexOf('min') != -1;
+			}
+
+			mod(a, b) {
+				return ((a % b) + b) % b;
+			}
+
+			dtr = (d) => d * Math.PI / 180;
+			rtd = (r) => r * 180 / Math.PI;
+			sin = (d) => Math.sin(this.dtr(d));
+			cos = (d) => Math.cos(this.dtr(d));
+			tan = (d) => Math.tan(this.dtr(d));
+			arcsin = (d) => this.rtd(Math.asin(d));
+			arccos = (d) => this.rtd(Math.acos(d));
+			arctan = (d) => this.rtd(Math.atan(d));
+			arccot = (x) => this.rtd(Math.atan(1 / x));
+			arctan2 = (y, x) => this.rtd(Math.atan2(y, x));
+		}
+
+		// ==================== 本地设置记忆 ====================
+		const STORAGE_KEY = 'PRAYER_SHADOW_WEB_V5';
+
+		function saveUserPrefs() {
+			try {
+				const cityVal = activeView === 'prayer'
+					? document.getElementById('pt-city').value
+					: document.getElementById('sh-city').value;
+				const prefs = {
+					city: cityVal,
+					lat: document.getElementById('pt-latitude').value,
+					lng: document.getElementById('pt-longitude').value,
+					timezone: document.getElementById('pt-timezone').value,
+					method: document.getElementById('pt-method').value,
+					fajrAngle: document.getElementById('pt-fajr-angle').value,
+					ishaAngle: document.getElementById('pt-isha-angle').value,
+					asr: document.getElementById('pt-asr').value,
+					objectLength: document.getElementById('sh-object-length').value,
+					unit: document.getElementById('sh-unit').value,
+					ptTimeFormat,
+					shTimeFormat
+				};
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+			} catch (e) {}
+		}
+
+		function loadUserPrefs() {
+			try {
+				const raw = localStorage.getItem(STORAGE_KEY);
+				return raw ? JSON.parse(raw) : null;
+			} catch (e) {
+				return null;
+			}
+		}
+
+		// ==================== 共用时区与模式切换 ====================
+		let activeView = 'prayer';
+
+		function populateTimeZoneSelect(selectEl) {
+			selectEl.innerHTML = '';
+			TIMEZONE_LIST.forEach((item) => {
+				const opt = document.createElement('option');
+				opt.value = item.value;
+				opt.textContent = item.label;
+				if (item.value === 'Asia/Shanghai') opt.selected = true;
+				selectEl.appendChild(opt);
+			});
+		}
+
+		function switchView(viewName) {
+			closeAllCityDropdowns();
+			activeView = viewName === 'shadow' ? 'shadow' : 'prayer';
+
+			document.getElementById('btn-view-prayer').classList.toggle('active', activeView === 'prayer');
+			document.getElementById('btn-view-shadow').classList.toggle('active', activeView === 'shadow');
+
+			document.getElementById('view-prayer').classList.toggle('active', activeView === 'prayer');
+			document.getElementById('view-shadow').classList.toggle('active', activeView === 'shadow');
+
+			document.getElementById('pt-fixed-header-bar').style.display = 'none';
+			document.getElementById('sh-fixed-header-bar').style.display = 'none';
+
+			if (activeView === 'prayer') {
+				document.getElementById('current-mode-title').textContent = '月度礼拜时间表';
+				document.getElementById('pt-city').value = document.getElementById('sh-city').value;
+				document.getElementById('pt-latitude').value = document.getElementById('sh-latitude').value;
+				document.getElementById('pt-longitude').value = document.getElementById('sh-longitude').value;
+				document.getElementById('pt-timezone').value = document.getElementById('sh-timezone').value;
+				ptUpdate();
+			} else {
+				document.getElementById('current-mode-title').textContent = '经纬度与物长计算正午及晡礼影长与时刻';
+				document.getElementById('sh-city').value = document.getElementById('pt-city').value;
+				document.getElementById('sh-latitude').value = document.getElementById('pt-latitude').value;
+				document.getElementById('sh-longitude').value = document.getElementById('pt-longitude').value;
+				document.getElementById('sh-timezone').value = document.getElementById('pt-timezone').value;
+				shRenderAll();
+			}
+
+			saveUserPrefs();
+			syncAllFixedHeaders();
+		}
+
+		function syncFixedHeaderBar(config) {
+			const bar = document.getElementById(config.barId);
+			const table = document.getElementById(config.tableId);
+			const headerRow = document.getElementById(config.headerRowId);
+			const fixedRow = document.getElementById(config.fixedRowId);
+			const wrap = document.getElementById(config.wrapId);
+
+			if (!bar || !table || !headerRow || !fixedRow || !wrap) return;
+			if (activeView !== config.viewName) {
+				bar.style.display = 'none';
+				return;
+			}
+
+			const thead = table.querySelector('thead');
+			const tbody = table.querySelector('tbody');
+			if (!thead || !tbody) return;
+
+			const theadRect = thead.getBoundingClientRect();
+			const tbodyRect = tbody.getBoundingClientRect();
+
+			if (theadRect.top < 0 && tbodyRect.bottom > theadRect.height) {
+				const wrapRect = wrap.getBoundingClientRect();
+				bar.style.display = 'block';
+				bar.style.left = `${Math.max(0, wrapRect.left)}px`;
+				bar.style.width = `${wrapRect.width}px`;
+
+				const origCells = Array.from(headerRow.children);
+				if (fixedRow.children.length !== origCells.length) {
+					fixedRow.innerHTML = '';
+					origCells.forEach((cell) => {
+						const newTh = document.createElement('th');
+						newTh.textContent = cell.textContent;
+						fixedRow.appendChild(newTh);
+					});
+				}
+
+				const fixedTable = bar.querySelector('table');
+				fixedTable.style.width = `${table.offsetWidth}px`;
+				fixedTable.style.transform = `translateX(${-wrap.scrollLeft}px)`;
+
+				const fixedCells = Array.from(fixedRow.children);
+				origCells.forEach((cell, idx) => {
+					const w = cell.getBoundingClientRect().width;
+					fixedCells[idx].style.width = `${w}px`;
+					fixedCells[idx].style.minWidth = `${w}px`;
+					fixedCells[idx].style.maxWidth = `${w}px`;
+				});
+			} else {
+				bar.style.display = 'none';
+			}
+		}
+
+		const PT_HEADER_CONFIG = {
+			viewName: 'prayer',
+			barId: 'pt-fixed-header-bar',
+			tableId: 'pt-timetable',
+			headerRowId: 'pt-head-row',
+			fixedRowId: 'pt-fixed-header-row',
+			wrapId: 'pt-table-wrap'
+		};
+
+		const SH_HEADER_CONFIG = {
+			viewName: 'shadow',
+			barId: 'sh-fixed-header-bar',
+			tableId: 'sh-main-table',
+			headerRowId: 'sh-main-header-row',
+			fixedRowId: 'sh-fixed-header-row',
+			wrapId: 'sh-table-wrap'
+		};
+
+		function syncAllFixedHeaders() {
+			syncFixedHeaderBar(PT_HEADER_CONFIG);
+			syncFixedHeaderBar(SH_HEADER_CONFIG);
+		}
+
+		// ==================== 界面一逻辑：月度礼拜时间表 ====================
+		const praytime = new PrayTime();
+		const ptNow = new Date();
+		let ptViewYear = ptNow.getFullYear();
+		let ptViewMonth = ptNow.getMonth();
+		let ptTimeFormat = 0;
+
+		function ptToggleCustomAnglesBox() {
+			const isCustom = document.getElementById('pt-method').value === 'Custom';
+			document.getElementById('pt-custom-angles').classList.toggle('active', isCustom);
+		}
+
+		function ptOnMethodChange() {
+			ptToggleCustomAnglesBox();
+			ptUpdate();
+		}
+
+		function ptDisplayMonth(offset) {
+			const lat = parseFloat(document.getElementById('pt-latitude').value);
+			const lng = parseFloat(document.getElementById('pt-longitude').value);
+			const timezone = document.getElementById('pt-timezone').value || 'Asia/Shanghai';
+			const method = document.getElementById('pt-method').value;
+			const asr = document.getElementById('pt-asr').value;
+			const format = ptTimeFormat ? '12H' : '24h';
+
+			if (Number.isNaN(lat) || Number.isNaN(lng)) {
+				return;
+			}
+
+			saveUserPrefs();
+
+			const targetDate = new Date(ptViewYear, ptViewMonth + offset, 1);
+			ptViewYear = targetDate.getFullYear();
+			ptViewMonth = targetDate.getMonth();
+
+			if (method === 'Custom') {
+				const fajrAngle = parseFloat(document.getElementById('pt-fajr-angle').value);
+				const ishaAngle = parseFloat(document.getElementById('pt-isha-angle').value);
+				if (Number.isNaN(fajrAngle) || Number.isNaN(ishaAngle)) return;
+				praytime.method('MWL').adjust({
+					fajr: fajrAngle,
+					isha: ishaAngle,
+					asr
+				});
+			} else {
+				praytime.method(method).adjust({ asr });
+			}
+
+			praytime.location([lat, lng]).timezone(timezone).format(format);
+
+			document.getElementById('pt-table-title').textContent = `${ptViewYear}年${ptViewMonth + 1}月`;
+			ptMakeTable(ptViewYear, ptViewMonth);
+		}
+
+		function ptMakeTable(year, month) {
+			const items = {
+				day: '日期',
+				fajr: '晨礼',
+				sunrise: '日出',
+				dhuhr: '晌礼',
+				asr: '晡礼',
+				maghrib: '昏礼',
+				isha: '宵礼'
+			};
+
+			const thead = document.createElement('thead');
+			thead.appendChild(ptMakeTableRow(items, items, 'head-row', 'pt-head-row'));
+
+			const tbody = document.createElement('tbody');
+			const date = new Date(year, month, 1);
+			const endDate = new Date(year, month + 1, 1);
+			const todayStr = new Date().toDateString();
+
+			while (date < endDate) {
+				const times = praytime.getTimes(date);
+				times.day = `${date.getDate()}日`;
+
+				const cls = date.toDateString() === todayStr ? 'today-row' : '';
+				tbody.appendChild(ptMakeTableRow(times, items, cls));
+				date.setDate(date.getDate() + 1);
+			}
+
+			const table = document.getElementById('pt-timetable');
+			table.replaceChildren();
+			table.appendChild(thead);
+			table.appendChild(tbody);
+
+			syncFixedHeaderBar(PT_HEADER_CONFIG);
+		}
+
+		function ptMakeTableRow(data, items, cls, rowId = '') {
+			const row = document.createElement('tr');
+			if (rowId) row.id = rowId;
+			for (const i in items) {
+				const cell = document.createElement(rowId === 'pt-head-row' ? 'th' : 'td');
+				cell.textContent = data[i];
+				row.appendChild(cell);
+			}
+			row.className = cls;
+			return row;
+		}
+
+		function ptSwitchFormat() {
+			const formats = ['24小时制', '12小时制'];
+			ptTimeFormat = (ptTimeFormat + 1) % 2;
+			document.getElementById('pt-time-format').textContent = formats[ptTimeFormat];
+			ptUpdate();
+		}
+
+		function ptUpdate() {
+			ptDisplayMonth(0);
+		}
+
+		// ==================== 界面二逻辑：正午与晡礼影长计算 ====================
+		const dtr = (d) => (d * Math.PI) / 180;
+		const rtd = (r) => (r * 180) / Math.PI;
+		const mod = (a, b) => ((a % b) + b) % b;
+		let shTimeFormat = 0;
+
+		function shSwitchFormat() {
+			const formats = ['24小时制', '12小时制'];
+			shTimeFormat = (shTimeFormat + 1) % 2;
+			document.getElementById('sh-time-format').textContent = formats[shTimeFormat];
+			saveUserPrefs();
+			shRenderAll();
+		}
+
+		function shFmtLen(val, unit) {
+			if (val === null || Number.isNaN(val) || !Number.isFinite(val)) return '∞';
+			return `${Number(val.toFixed(2))} ${unit}`;
+		}
+
+		function shSunGeometry(utcMidnightMs, approxHours, lng) {
+			const jd = utcMidnightMs / 86400000 + 2440587.5 + (approxHours - lng / 15) / 24;
+			const T = (jd - 2451545.0) / 36525.0;
+
+			const L0 = mod(280.46646 + T * (36000.76983 + T * 0.0003032), 360);
+			const M = mod(357.52911 + T * (35999.05029 - 0.0001537 * T), 360);
+			const e = 0.016708634 - T * (0.000042037 + 0.0000001267 * T);
+
+			const C =
+				Math.sin(dtr(M)) * (1.914602 - T * (0.004817 + 0.000014 * T)) +
+				Math.sin(dtr(2 * M)) * (0.019993 - 0.000101 * T) +
+				Math.sin(dtr(3 * M)) * 0.000289;
+
+			const trueLong = L0 + C;
+			const omega = 125.04 - 1934.136 * T;
+			const lambda = trueLong - 0.00569 - 0.00478 * Math.sin(dtr(omega));
+
+			const eps0 = 23 + (26 + (21.448 - T * (46.815 + T * (0.00059 - T * 0.001813))) / 60) / 60;
+			const eps = eps0 + 0.00256 * Math.cos(dtr(omega));
+
+			const decl = rtd(Math.asin(Math.sin(dtr(eps)) * Math.sin(dtr(lambda))));
+
+			const y = Math.tan(dtr(eps / 2)) ** 2;
+			const eqTimeMinutes =
+				4 *
+				rtd(
+					y * Math.sin(2 * dtr(L0)) -
+						2 * e * Math.sin(dtr(M)) +
+						4 * e * y * Math.sin(dtr(M)) * Math.cos(2 * dtr(L0)) -
+						0.5 * y * y * Math.sin(4 * dtr(L0)) -
+						1.25 * e * e * Math.sin(2 * dtr(M))
+				);
+
+			return { decl, eqTimeMinutes };
+		}
+
+		function shSolveAfternoonElevationUtcMs(utcMidnight, noonLocalHours, noonGeom, lat, lng, elevationDeg) {
+			if (!Number.isFinite(elevationDeg) || elevationDeg <= 0 || elevationDeg >= 90) return null;
+
+			let estHours = noonLocalHours + 3;
+			let geom = noonGeom;
+
+			for (let i = 0; i < 3; i++) {
+				geom = shSunGeometry(utcMidnight, estHours, lng);
+				const numerator =
+					Math.sin(dtr(elevationDeg)) - Math.sin(dtr(lat)) * Math.sin(dtr(geom.decl));
+				const denominator = Math.cos(dtr(lat)) * Math.cos(dtr(geom.decl));
+
+				if (Math.abs(denominator) < 1e-10) return null;
+				const cosH = numerator / denominator;
+				if (cosH < -1 || cosH > 1) return null;
+
+				const hourAngleHours = rtd(Math.acos(cosH)) / 15;
+				const currentNoon = 12 - geom.eqTimeMinutes / 60;
+				estHours = currentNoon + hourAngleHours;
+			}
+
+			return utcMidnight + (estHours - lng / 15) * 3600000;
+		}
+
+		function shCalcDayShadowMetrics(year, month, day, lat, lng, h) {
+			const utcMidnight = Date.UTC(year, month - 1, day);
+
+			let noonLocalHours = 12;
+			let geom = shSunGeometry(utcMidnight, noonLocalHours, lng);
+			for (let i = 0; i < 2; i++) {
+				geom = shSunGeometry(utcMidnight, noonLocalHours, lng);
+				noonLocalHours = 12 - geom.eqTimeMinutes / 60;
+			}
+
+			const noonUtcMs = utcMidnight + (noonLocalHours - lng / 15) * 3600000;
+			const diffLatDecl = Math.abs(lat - geom.decl);
+			const noonElevation = 90 - diffLatDecl;
+
+			const noonShadow = noonElevation > 0 ? h * Math.tan(dtr(diffLatDecl)) : Infinity;
+
+			const hanafiShadow = Number.isFinite(noonShadow) ? noonShadow + 2 * h : Infinity;
+			const hanafiAngle = Number.isFinite(hanafiShadow) && hanafiShadow > 0 ? rtd(Math.atan(h / hanafiShadow)) : 0;
+			const hanafiUtcMs = shSolveAfternoonElevationUtcMs(utcMidnight, noonLocalHours, geom, lat, lng, hanafiAngle);
+
+			const standardShadow = Number.isFinite(noonShadow) ? noonShadow + h : Infinity;
+			const standardAngle = Number.isFinite(standardShadow) && standardShadow > 0 ? rtd(Math.atan(h / standardShadow)) : 0;
+			const standardUtcMs = shSolveAfternoonElevationUtcMs(utcMidnight, noonLocalHours, geom, lat, lng, standardAngle);
+
+			return {
+				declination: geom.decl,
+				noonUtcMs,
+				noonElevation,
+				noonShadow,
+				hanafiShadow,
+				hanafiAngle,
+				hanafiUtcMs,
+				standardShadow,
+				standardAngle,
+				standardUtcMs
+			};
+		}
+
+		function shFormatTime(utcMs, timezone) {
+			if (utcMs === null || Number.isNaN(utcMs)) return '未达到';
+			const offsetHours = getTimezoneOffsetHours(timezone);
+			const d = new Date(utcMs + offsetHours * 3600000);
+			const hh = d.getUTCHours();
+			const mm = String(d.getUTCMinutes()).padStart(2, '0');
+
+			if (shTimeFormat === 0) {
+				return `${String(hh).padStart(2, '0')}:${mm}`;
+			}
+			const h12 = hh % 12 || 12;
+			const prefix = hh >= 12 ? '下午 ' : '上午 ';
+			return `${prefix}${h12}:${mm}`;
+		}
+
+		function shFormatDiffMinutes(hanafiMs, standardMs) {
+			if (hanafiMs === null || standardMs === null) return '-';
+			const diffMin = Math.round((hanafiMs - standardMs) / 60000);
+			if (diffMin < 60) return `${diffMin} 分钟`;
+			const hrs = Math.floor(diffMin / 60);
+			const mins = diffMin % 60;
+			return `${hrs} 小时 ${mins} 分`;
+		}
+
+		function shShiftMonth(offset) {
+			const dateInput = document.getElementById('sh-target-date');
+			const [y, m, d] = dateInput.value.split('-').map(Number);
+			const next = new Date(y, m - 1 + offset, 1);
+			const maxDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+			const safeDay = Math.min(d, maxDay);
+			const yyyy = next.getFullYear();
+			const mm = String(next.getMonth() + 1).padStart(2, '0');
+			const dd = String(safeDay).padStart(2, '0');
+			dateInput.value = `${yyyy}-${mm}-${dd}`;
+			shRenderAll();
+		}
+
+		function shRenderAll() {
+			const lat = parseFloat(document.getElementById('sh-latitude').value);
+			const lng = parseFloat(document.getElementById('sh-longitude').value);
+			const timezone = document.getElementById('sh-timezone').value || 'Asia/Shanghai';
+			const dateVal = document.getElementById('sh-target-date').value;
+			const h = parseFloat(document.getElementById('sh-object-length').value);
+			const unit = document.getElementById('sh-unit').value;
+
+			if (Number.isNaN(lat) || Number.isNaN(lng) || Number.isNaN(h) || h <= 0 || !dateVal) {
+				return;
+			}
+
+			document.getElementById('pt-latitude').value = lat;
+			document.getElementById('pt-longitude').value = lng;
+			document.getElementById('pt-timezone').value = timezone;
+			saveUserPrefs();
+
+			const [year, month, day] = dateVal.split('-').map(Number);
+			const single = shCalcDayShadowMetrics(year, month, day, lat, lng, h);
+
+			document.getElementById('sh-noon-shadow').textContent = shFmtLen(single.noonShadow, unit);
+			document.getElementById('sh-noon-sub').innerHTML =
+				`正午时刻：${shFormatTime(single.noonUtcMs, timezone)}<br>正午太阳高度角：${single.noonElevation.toFixed(2)}°`;
+
+			document.getElementById('sh-hanafi-shadow').textContent = shFmtLen(single.hanafiShadow, unit);
+			document.getElementById('sh-hanafi-sub').innerHTML =
+				`晡礼时刻：${shFormatTime(single.hanafiUtcMs, timezone)}<br>晡礼太阳高度角：${single.hanafiAngle.toFixed(2)}°`;
+
+			document.getElementById('sh-standard-shadow').textContent = shFmtLen(single.standardShadow, unit);
+			document.getElementById('sh-standard-sub').innerHTML =
+				`晡礼时刻：${shFormatTime(single.standardUtcMs, timezone)}<br>晡礼太阳高度角：${single.standardAngle.toFixed(2)}°`;
+
+			document.getElementById('sh-declination-main').textContent = `${single.declination.toFixed(2)}°`;
+			document.getElementById('sh-declination-sub').innerHTML =
+				`当日太阳赤纬<br>哈乃斐比标准晚：${shFormatDiffMinutes(single.hanafiUtcMs, single.standardUtcMs)}`;
+
+			document.getElementById('sh-month-title').textContent = `${year}年${month}月影长表（物长 ${h} ${unit}）`;
+			const tbody = document.getElementById('sh-month-tbody');
+			tbody.innerHTML = '';
+
+			const daysInMonth = new Date(year, month, 0).getDate();
+			for (let d = 1; d <= daysInMonth; d++) {
+				const mData = shCalcDayShadowMetrics(year, month, d, lat, lng, h);
+				const tr = document.createElement('tr');
+				if (d === day) tr.className = 'selected-row';
+
+				tr.innerHTML = `
+					<td>${d}日</td>
+					<td>${shFormatTime(mData.noonUtcMs, timezone)}</td>
+					<td>${mData.noonElevation.toFixed(2)}°</td>
+					<td>${shFmtLen(mData.noonShadow, unit)}</td>
+					<td>${shFormatTime(mData.hanafiUtcMs, timezone)}</td>
+					<td>${shFmtLen(mData.hanafiShadow, unit)}</td>
+					<td>${mData.hanafiAngle.toFixed(2)}°</td>
+					<td>${shFormatTime(mData.standardUtcMs, timezone)}</td>
+					<td>${shFmtLen(mData.standardShadow, unit)}</td>
+					<td>${mData.standardAngle.toFixed(2)}°</td>
+				`;
+				tbody.appendChild(tr);
+			}
+
+			syncFixedHeaderBar(SH_HEADER_CONFIG);
+		}
+
+		// ==================== 初始化 ====================
+		(function initApp() {
+			populateTimeZoneSelect(document.getElementById('pt-timezone'));
+			populateTimeZoneSelect(document.getElementById('sh-timezone'));
+
+			const saved = loadUserPrefs();
+			if (saved) {
+				if (typeof saved.city === 'string') {
+					document.getElementById('pt-city').value = saved.city;
+					document.getElementById('sh-city').value = saved.city;
+				}
+				if (saved.lat) {
+					document.getElementById('pt-latitude').value = saved.lat;
+					document.getElementById('sh-latitude').value = saved.lat;
+				}
+				if (saved.lng) {
+					document.getElementById('pt-longitude').value = saved.lng;
+					document.getElementById('sh-longitude').value = saved.lng;
+				}
+				if (saved.timezone) {
+					document.getElementById('pt-timezone').value = saved.timezone;
+					document.getElementById('sh-timezone').value = saved.timezone;
+				}
+				if (saved.method) document.getElementById('pt-method').value = saved.method;
+				if (saved.fajrAngle) document.getElementById('pt-fajr-angle').value = saved.fajrAngle;
+				if (saved.ishaAngle) document.getElementById('pt-isha-angle').value = saved.ishaAngle;
+				if (saved.asr) document.getElementById('pt-asr').value = saved.asr;
+				if (saved.objectLength) document.getElementById('sh-object-length').value = saved.objectLength;
+				if (saved.unit) document.getElementById('sh-unit').value = saved.unit;
+				if (typeof saved.ptTimeFormat === 'number') ptTimeFormat = saved.ptTimeFormat;
+				if (typeof saved.shTimeFormat === 'number') shTimeFormat = saved.shTimeFormat;
+			}
+
+			const today = new Date();
+			const yyyy = today.getFullYear();
+			const mm = String(today.getMonth() + 1).padStart(2, '0');
+			const dd = String(today.getDate()).padStart(2, '0');
+			document.getElementById('sh-target-date').value = `${yyyy}-${mm}-${dd}`;
+
+			['sh-latitude', 'sh-longitude'].forEach((id) => {
+				const el = document.getElementById(id);
+				el.addEventListener('input', () => {
+					onCoordManualChange('sh');
+					shRenderAll();
+				});
+				el.addEventListener('change', shRenderAll);
+			});
+
+			['sh-timezone', 'sh-target-date', 'sh-object-length', 'sh-unit'].forEach((id) => {
+				const el = document.getElementById(id);
+				el.addEventListener('input', shRenderAll);
+				el.addEventListener('change', shRenderAll);
+			});
+
+			// 电脑端点击空白处收起城市下拉列表
+			document.addEventListener('click', (e) => {
+				if (!e.target.closest('.city-combo') && !e.target.closest('.city-dropdown')) {
+					closeAllCityDropdowns();
+				}
+			});
+
+			window.addEventListener('scroll', syncAllFixedHeaders, { passive: true });
+			window.addEventListener('resize', syncAllFixedHeaders);
+			document.getElementById('pt-table-wrap').addEventListener('scroll', syncAllFixedHeaders, { passive: true });
+			document.getElementById('sh-table-wrap').addEventListener('scroll', syncAllFixedHeaders, { passive: true });
+
+			const isStandalone =
+				window.matchMedia('(display-mode: standalone)').matches ||
+				window.navigator.standalone === true;
+			if (isStandalone) {
+				const tipBar = document.getElementById('install-tip-bar');
+				if (tipBar) tipBar.style.display = 'none';
+			}
+
+			const formats = ['24小时制', '12小时制'];
+			document.getElementById('pt-time-format').textContent = formats[ptTimeFormat];
+			document.getElementById('sh-time-format').textContent = formats[shTimeFormat];
+
+			ptToggleCustomAnglesBox();
+			ptUpdate();
+			shRenderAll();
+		})();
+	</script>
 </body>
+
 </html>
