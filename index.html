@@ -106,6 +106,79 @@
 			display: flex;
 		}
 
+		/* 自定义城市模糊搜索下拉框 */
+		.city-combo {
+			position: relative;
+			display: inline-block;
+			width: 142px;
+			max-width: 100%;
+		}
+
+		.city-combo input {
+			width: 100% !important;
+			padding-right: 24px !important;
+		}
+
+		.city-combo-arrow {
+			position: absolute;
+			right: 8px;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 11px;
+			color: #64748b;
+			pointer-events: none;
+		}
+
+		.city-dropdown {
+			display: none;
+			position: absolute;
+			left: 0;
+			top: calc(100% + 4px);
+			width: 100%;
+			min-width: 150px;
+			max-height: 230px;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+			background: #ffffff;
+			border: 1px solid #cbd5e1;
+			border-radius: 7px;
+			box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+			z-index: 1000;
+		}
+
+		.city-dropdown.open {
+			display: block;
+		}
+
+		.city-option {
+			padding: 8px 10px;
+			font-size: 14px;
+			color: #1f2937;
+			cursor: pointer;
+			border-bottom: 1px solid #f1f5f9;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.city-option:last-child {
+			border-bottom: none;
+		}
+
+		.city-option:hover,
+		.city-option.active {
+			background: #e8f0fe;
+			color: #1d4ed8;
+			font-weight: 600;
+		}
+
+		.city-empty {
+			padding: 9px 10px;
+			font-size: 13px;
+			color: #94a3b8;
+			text-align: center;
+		}
+
 		/* ---------------- 界面一：祈祷时间计算 ---------------- */
 		.pt-header {
 			width: 100%;
@@ -143,12 +216,6 @@
 			font-size: 14px;
 			background: #fff;
 			color: #111827;
-		}
-
-		#pt-city,
-		#sh-city {
-			width: 142px;
-			max-width: 100%;
 		}
 
 		#pt-timezone,
@@ -550,6 +617,7 @@
 				color: #4b5563;
 			}
 
+			.city-combo,
 			.pt-field input,
 			.pt-field select,
 			.sh-field input,
@@ -666,7 +734,13 @@
 			<div class="pt-header">
 				<form class="pt-form" action="javascript:ptUpdate();">
 					<label class="pt-field">城市
-						<select id="pt-city" onchange="onCitySelect('pt')"></select>
+						<span class="city-combo" id="pt-city-combo">
+							<input type="text" id="pt-city" placeholder="搜索或选择城市" autocomplete="off"
+								onfocus="openCityDropdown('pt')"
+								oninput="onCitySearchInput('pt')">
+							<span class="city-combo-arrow">▼</span>
+							<div class="city-dropdown" id="pt-city-dropdown"></div>
+						</span>
 					</label>
 					<label class="pt-field">纬度
 						<input type="text" inputmode="decimal" value="40.741428" id="pt-latitude" size="10" placeholder="纬度" oninput="onCoordManualChange('pt')" onchange="ptUpdate();">
@@ -736,7 +810,13 @@
 					<h1>已知经纬度与物长 — 计算正午及晡礼影长、高度角与时刻</h1>
 					<div class="sh-controls">
 						<label class="sh-field">城市
-							<select id="sh-city" onchange="onCitySelect('sh')"></select>
+							<span class="city-combo" id="sh-city-combo">
+								<input type="text" id="sh-city" placeholder="搜索或选择城市" autocomplete="off"
+									onfocus="openCityDropdown('sh')"
+									oninput="onCitySearchInput('sh')">
+								<span class="city-combo-arrow">▼</span>
+								<div class="city-dropdown" id="sh-city-dropdown"></div>
+							</span>
 						</label>
 						<label class="sh-field">纬度
 							<input type="number" inputmode="decimal" step="0.000001" min="-90" max="90" id="sh-latitude" value="40.741428" style="width: 112px;">
@@ -1213,34 +1293,83 @@
 			{ name: '琼中', lat: 19.03, lng: 109.84, tz: 'Asia/Shanghai' }
 		];
 
-		function populateCitySelect(selectEl) {
-			selectEl.innerHTML = '';
-			const customOpt = document.createElement('option');
-			customOpt.value = '';
-			customOpt.textContent = '自定义经纬度';
-			selectEl.appendChild(customOpt);
+		// ==================== 模糊搜索下拉选择框逻辑 ====================
+		function renderCityDropdown(prefix, keyword) {
+			const dropdown = document.getElementById(`${prefix}-city-dropdown`);
+			const currentText = document.getElementById(`${prefix}-city`).value.trim();
+			const q = (keyword !== undefined ? keyword : '').trim();
 
-			CITY_DATA.forEach((item, idx) => {
-				const opt = document.createElement('option');
-				opt.value = String(idx);
-				opt.textContent = item.name;
-				selectEl.appendChild(opt);
+			const list = q
+				? CITY_DATA.filter((item) => item.name.includes(q))
+				: CITY_DATA;
+
+			dropdown.innerHTML = '';
+			if (list.length === 0) {
+				const empty = document.createElement('div');
+				empty.className = 'city-empty';
+				empty.textContent = '无匹配城市';
+				dropdown.appendChild(empty);
+				return;
+			}
+
+			list.forEach((city) => {
+				const div = document.createElement('div');
+				div.className = 'city-option' + (city.name === currentText ? ' active' : '');
+				div.textContent = city.name;
+				// 使用 pointerdown/mousedown 避免 blur 先触发关闭导致点不到
+				div.addEventListener('pointerdown', (e) => {
+					e.preventDefault();
+					selectCityItem(prefix, city);
+				});
+				dropdown.appendChild(div);
 			});
 		}
 
-		function onCitySelect(prefix) {
-			const citySelect = document.getElementById(`${prefix}-city`);
+		function openCityDropdown(prefix) {
+			closeAllCityDropdowns(prefix);
+			const inputVal = document.getElementById(`${prefix}-city`).value.trim();
+			const isExactCity = CITY_DATA.some((c) => c.name === inputVal);
+			// 若当前框里已经是完整选中的城市名，点击时展示全部列表方便切换；否则按当前输入筛选
+			renderCityDropdown(prefix, isExactCity ? '' : inputVal);
+			document.getElementById(`${prefix}-city-dropdown`).classList.add('open');
+		}
+
+		function closeAllCityDropdowns(exceptPrefix = '') {
+			['pt', 'sh'].forEach((p) => {
+				if (p !== exceptPrefix) {
+					const dd = document.getElementById(`${p}-city-dropdown`);
+					if (dd) dd.classList.remove('open');
+				}
+			});
+		}
+
+		function onCitySearchInput(prefix) {
+			const val = document.getElementById(`${prefix}-city`).value;
+			renderCityDropdown(prefix, val);
+			document.getElementById(`${prefix}-city-dropdown`).classList.add('open');
+
+			const exact = CITY_DATA.find((c) => c.name === val.trim());
+			if (exact) {
+				applyCityCoords(prefix, exact);
+			} else {
+				saveUserPrefs();
+			}
+		}
+
+		function selectCityItem(prefix, city) {
+			document.getElementById(`${prefix}-city`).value = city.name;
+			closeAllCityDropdowns();
+			applyCityCoords(prefix, city);
+		}
+
+		function applyCityCoords(prefix, city) {
 			const latInput = document.getElementById(`${prefix}-latitude`);
 			const lngInput = document.getElementById(`${prefix}-longitude`);
 			const tzSelect = document.getElementById(`${prefix}-timezone`);
 
-			const idx = parseInt(citySelect.value, 10);
-			if (!Number.isNaN(idx) && CITY_DATA[idx]) {
-				const city = CITY_DATA[idx];
-				latInput.value = city.lat;
-				lngInput.value = city.lng;
-				if (city.tz) tzSelect.value = city.tz;
-			}
+			latInput.value = city.lat;
+			lngInput.value = city.lng;
+			if (city.tz) tzSelect.value = city.tz;
 
 			if (prefix === 'pt') {
 				ptUpdate();
@@ -1250,15 +1379,15 @@
 		}
 
 		function onCoordManualChange(prefix) {
-			const citySelect = document.getElementById(`${prefix}-city`);
+			const cityInput = document.getElementById(`${prefix}-city`);
 			const latInput = document.getElementById(`${prefix}-latitude`);
 			const lngInput = document.getElementById(`${prefix}-longitude`);
-			const idx = parseInt(citySelect.value, 10);
-			if (!Number.isNaN(idx) && CITY_DATA[idx]) {
+			const matched = CITY_DATA.find((c) => c.name === cityInput.value.trim());
+			if (matched) {
 				const curLat = parseFloat(latInput.value);
 				const curLng = parseFloat(lngInput.value);
-				if (curLat !== CITY_DATA[idx].lat || curLng !== CITY_DATA[idx].lng) {
-					citySelect.value = '';
+				if (curLat !== matched.lat || curLng !== matched.lng) {
+					cityInput.value = '';
 				}
 			}
 		}
@@ -1534,12 +1663,15 @@
 		}
 
 		// ==================== 本地设置记忆 ====================
-		const STORAGE_KEY = 'PRAYER_SHADOW_WEB_V3';
+		const STORAGE_KEY = 'PRAYER_SHADOW_WEB_V4';
 
 		function saveUserPrefs() {
 			try {
+				const cityVal = activeView === 'prayer'
+					? document.getElementById('pt-city').value
+					: document.getElementById('sh-city').value;
 				const prefs = {
-					city: document.getElementById('pt-city').value,
+					city: cityVal,
 					lat: document.getElementById('pt-latitude').value,
 					lng: document.getElementById('pt-longitude').value,
 					timezone: document.getElementById('pt-timezone').value,
@@ -1580,6 +1712,7 @@
 		}
 
 		function switchView(viewName) {
+			closeAllCityDropdowns();
 			activeView = viewName === 'shadow' ? 'shadow' : 'prayer';
 
 			document.getElementById('btn-view-prayer').classList.toggle('active', activeView === 'prayer');
@@ -2019,8 +2152,6 @@
 
 		// ==================== 初始化 ====================
 		(function initApp() {
-			populateCitySelect(document.getElementById('pt-city'));
-			populateCitySelect(document.getElementById('sh-city'));
 			populateTimeZoneSelect(document.getElementById('pt-timezone'));
 			populateTimeZoneSelect(document.getElementById('sh-timezone'));
 
@@ -2071,6 +2202,13 @@
 				const el = document.getElementById(id);
 				el.addEventListener('input', shRenderAll);
 				el.addEventListener('change', shRenderAll);
+			});
+
+			// 点击页面空白处收起城市下拉列表
+			document.addEventListener('pointerdown', (e) => {
+				if (!e.target.closest('.city-combo')) {
+					closeAllCityDropdowns();
+				}
 			});
 
 			window.addEventListener('scroll', syncAllFixedHeaders, { passive: true });
